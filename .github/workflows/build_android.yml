@@ -1,0 +1,54 @@
+name: Build Android Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-22.04
+
+    steps:
+      # ── 1. Check out code ───────────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Set up Java (required for Android builds) ────────
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # ── 3. Install Flutter ──────────────────────────────────
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.0'
+          channel: 'stable'
+          cache: true
+
+      # ── 4. Get dependencies ─────────────────────────────────
+      - name: Flutter pub get
+        run: flutter pub get
+
+      # ── 5. Build APK (release, unsigned) ────────────────────
+      #     Produces a universal APK that works on all Android devices.
+      #     For Play Store you would use --split-per-abi instead.
+      - name: Build APK
+        run: flutter build apk --release
+
+      # ── 6. Rename APK ───────────────────────────────────────
+      - name: Rename APK
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             TripReady_v1.0_Android.apk
+
+      # ── 7. Upload artifact ──────────────────────────────────
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TripReady-Android-apk
+          path: TripReady_v1.0_Android.apk
+          retention-days: 30
