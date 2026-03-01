@@ -1,0 +1,105 @@
+name: Build Linux Release
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # allows manual trigger from GitHub UI
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-22.04  # Use 22.04 for broadest compatibility
+
+    steps:
+      # ── 1. Check out your code ──────────────────────────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Install Linux build dependencies ─────────────────
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            clang cmake ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libstdc++-12-dev \
+            libsqlite3-dev patchelf
+
+      # ── 3. Install Flutter ──────────────────────────────────
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.0'
+          channel: 'stable'
+          cache: true
+
+      # ── 4. Enable Linux desktop target ──────────────────────
+      - name: Enable Linux desktop
+        run: flutter config --enable-linux-desktop
+
+      # ── 5. Get dependencies ─────────────────────────────────
+      - name: Flutter pub get
+        run: flutter pub get
+
+      # ── 6. Build release binary ─────────────────────────────
+      - name: Build Linux release
+        run: flutter build linux --release
+
+      # ── 7. Create tarball ───────────────────────────────────
+      - name: Create tar.gz package
+        run: |
+          cd build/linux/x64/release/
+          tar -czvf TripReady_v1.0_Linux_x64.tar.gz bundle/
+
+      # ── 8. Create .deb package ──────────────────────────────
+      - name: Create .deb package
+        run: |
+          mkdir -p tripready_deb/DEBIAN
+          mkdir -p tripready_deb/opt/tripready
+          mkdir -p tripready_deb/usr/share/applications
+
+          cp -r build/linux/x64/release/bundle/* tripready_deb/opt/tripready/
+          chmod +x tripready_deb/opt/tripready/tripready
+
+          cat > tripready_deb/DEBIAN/control << EOF
+          Package: tripready
+          Version: 1.0.0
+          Section: utils
+          Priority: optional
+          Architecture: amd64
+          Maintainer: TripReady
+          Description: TripReady - Personal Travel Planner
+           Offline travel management app for managing trips,
+           packing lists, tasks, addresses, receipts and documents.
+          EOF
+
+          cat > tripready_deb/usr/share/applications/tripready.desktop << EOF
+          [Desktop Entry]
+          Name=TripReady
+          Comment=Personal Travel Planner
+          Exec=/opt/tripready/tripready
+          Terminal=false
+          Type=Application
+          Categories=Utility;
+          EOF
+
+          cat > tripready_deb/DEBIAN/postinst << EOF
+          #!/bin/bash
+          chmod +x /opt/tripready/tripready
+          EOF
+          chmod +x tripready_deb/DEBIAN/postinst
+
+          dpkg-deb --build tripready_deb TripReady_v1.0_amd64.deb
+
+      # ── 9. Upload both packages as downloadable artifacts ───
+      - name: Upload tar.gz artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TripReady-Linux-tar
+          path: build/linux/x64/release/TripReady_v1.0_Linux_x64.tar.gz
+          retention-days: 30
+
+      - name: Upload .deb artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TripReady-Linux-deb
+          path: TripReady_v1.0_amd64.deb
+          retention-days: 30
