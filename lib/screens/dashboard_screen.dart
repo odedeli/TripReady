@@ -1,0 +1,352 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:percent_indicator/percent_indicator.dart';
+import '../models/trip.dart';
+import '../database/database_helper.dart';
+import '../theme/app_theme.dart';
+import '../widgets/shared_widgets.dart';
+import 'trip_detail_screen.dart';
+import '../main.dart' show tabNotifier;
+
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  Trip? _activeTrip;
+  Map<String, int> _stats = {};
+  double _totalExpenses = 0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    final trip = await DatabaseHelper.instance.getActiveTrip();
+    Map<String, int> stats = {};
+    double expenses = 0;
+
+    if (trip != null) {
+      stats = await DatabaseHelper.instance.getTripStats(trip.id);
+      expenses = await DatabaseHelper.instance.getTripTotalExpenses(trip.id);
+    }
+
+    setState(() {
+      _activeTrip = trip;
+      _stats = stats;
+      _totalExpenses = expenses;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('TripReady'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_outlined),
+            onPressed: _loadData,
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
+          : RefreshIndicator(
+              onRefresh: _loadData,
+              child: _activeTrip == null
+                  ? _NoActiveTripView(onGoToTrips: () => tabNotifier.value = 1)
+                  : _DashboardContent(
+                      trip: _activeTrip!,
+                      stats: _stats,
+                      totalExpenses: _totalExpenses,
+                      onOpenTrip: _openActiveTrip,
+                    ),
+            ),
+    );
+  }
+
+  Future<void> _openActiveTrip() async {
+    if (_activeTrip == null) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => TripDetailScreen(trip: _activeTrip!)),
+    );
+    _loadData();
+  }
+}
+
+class _NoActiveTripView extends StatelessWidget {
+  final VoidCallback onGoToTrips;
+  const _NoActiveTripView({required this.onGoToTrips});
+
+  @override
+  Widget build(BuildContext context) {
+    return EmptyState(
+      icon: Icons.flight_outlined,
+      title: 'No Active Trip',
+      subtitle: 'Set a trip as active to see your travel dashboard here.',
+      buttonLabel: 'Go to My Trips',
+      onButtonPressed: onGoToTrips,
+    );
+  }
+}
+
+class _DashboardContent extends StatelessWidget {
+  final Trip trip;
+  final Map<String, int> stats;
+  final double totalExpenses;
+  final VoidCallback onOpenTrip;
+
+  const _DashboardContent({
+    required this.trip,
+    required this.stats,
+    required this.totalExpenses,
+    required this.onOpenTrip,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fmt = DateFormat('dd MMM yyyy');
+    final daysUntil = trip.departureDate.difference(DateTime.now()).inDays;
+    final daysLeft = trip.returnDate.difference(DateTime.now()).inDays;
+
+    final packingTotal = stats['packing_total'] ?? 0;
+    final packingPacked = stats['packing_packed'] ?? 0;
+    final packingPercent = packingTotal == 0 ? 0.0 : packingPacked / packingTotal;
+
+    final tasksTotal = stats['tasks_total'] ?? 0;
+    final tasksDone = stats['tasks_done'] ?? 0;
+    final tasksPercent = tasksTotal == 0 ? 0.0 : tasksDone / tasksTotal;
+
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        // Hero banner
+        GestureDetector(
+          onTap: onOpenTrip,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [TripReadyTheme.navy, TripReadyTheme.teal],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: TripReadyTheme.navy.withOpacity(0.25),
+                  blurRadius: 20,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: TripReadyTheme.amber,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text('ACTIVE TRIP', style: TextStyle(
+                        color: TripReadyTheme.navy,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      )),
+                    ),
+                    const Spacer(),
+                    const Icon(Icons.open_in_new, color: Colors.white54, size: 16),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(trip.name, style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                  color: Colors.white, height: 1.1,
+                )),
+                const SizedBox(height: 4),
+                Row(children: [
+                  const Icon(Icons.place_outlined, size: 14, color: Colors.white60),
+                  const SizedBox(width: 4),
+                  Text(
+                    trip.country != null ? '${trip.destination}, ${trip.country}' : trip.destination,
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ]),
+                const SizedBox(height: 16),
+                Row(children: [
+                  const Icon(Icons.calendar_today_outlined, size: 12, color: Colors.white60),
+                  const SizedBox(width: 4),
+                  Text(
+                    '${fmt.format(trip.departureDate)} → ${fmt.format(trip.returnDate)} · ${trip.durationDays}d',
+                    style: const TextStyle(color: Colors.white60, fontSize: 12),
+                  ),
+                ]),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.white12,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    daysUntil > 0
+                        ? '🗓  $daysUntil days until departure'
+                        : daysLeft >= 0
+                            ? '✈️  Currently travelling · $daysLeft days left'
+                            : '✅  Trip completed',
+                    style: const TextStyle(
+                      color: TripReadyTheme.amberLight,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Progress section
+        const SectionHeader(title: 'Progress'),
+        Row(
+          children: [
+            Expanded(child: _ProgressCard(
+              title: 'Packing',
+              icon: Icons.backpack_outlined,
+              done: packingPacked,
+              total: packingTotal,
+              percent: packingPercent,
+              color: TripReadyTheme.teal,
+            )),
+            const SizedBox(width: 12),
+            Expanded(child: _ProgressCard(
+              title: 'Tasks',
+              icon: Icons.task_alt_outlined,
+              done: tasksDone,
+              total: tasksTotal,
+              percent: tasksPercent,
+              color: TripReadyTheme.success,
+            )),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        // Quick stats row
+        const SectionHeader(title: 'Summary'),
+        Row(children: [
+          Expanded(child: StatCard(
+            icon: Icons.place_outlined,
+            label: 'Addresses',
+            value: '${stats['address_count'] ?? 0}',
+            accentColor: TripReadyTheme.navy,
+          )),
+          const SizedBox(width: 12),
+          Expanded(child: StatCard(
+            icon: Icons.receipt_outlined,
+            label: 'Receipts',
+            value: '${stats['receipt_count'] ?? 0}',
+            accentColor: TripReadyTheme.amber,
+          )),
+          const SizedBox(width: 12),
+          Expanded(child: StatCard(
+            icon: Icons.payments_outlined,
+            label: 'Expenses',
+            value: '\$${totalExpenses.toStringAsFixed(0)}',
+            accentColor: TripReadyTheme.danger,
+          )),
+        ]),
+        const SizedBox(height: 24),
+
+        OutlinedButton.icon(
+          onPressed: onOpenTrip,
+          icon: const Icon(Icons.open_in_new),
+          label: const Text('Open Full Trip Details'),
+        ),
+        const SizedBox(height: 40),
+      ],
+    );
+  }
+}
+
+class _ProgressCard extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final int done;
+  final int total;
+  final double percent;
+  final Color color;
+
+  const _ProgressCard({
+    required this.title,
+    required this.icon,
+    required this.done,
+    required this.total,
+    required this.percent,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: TripReadyTheme.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: TripReadyTheme.navy.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(icon, size: 18, color: color),
+            const SizedBox(width: 6),
+            Text(title, style: Theme.of(context).textTheme.titleSmall),
+          ]),
+          const SizedBox(height: 12),
+          Center(
+            child: CircularPercentIndicator(
+              radius: 48,
+              lineWidth: 8,
+              percent: percent.clamp(0.0, 1.0),
+              center: Text(
+                total == 0 ? '—' : '${(percent * 100).round()}%',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              progressColor: color,
+              backgroundColor: color.withOpacity(0.12),
+              circularStrokeCap: CircularStrokeCap.round,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              total == 0 ? 'Nothing added yet' : '$done of $total',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
