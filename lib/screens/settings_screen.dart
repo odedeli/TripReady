@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:tripready/l10n/app_localizations.dart';
 import '../database/backup_service.dart';
 import '../database/database_helper.dart';
+import '../services/language_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -8,187 +10,279 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l.settingsTitle)),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          _SectionLabel('Data Management'),
+          // ── Language ──
+          _SectionLabel(l.settingsLanguage),
+          const _LanguageTile(),
+
+          const SizedBox(height: 24),
+
+          // ── Data Management ──
+          _SectionLabel(l.settingsDataManagement),
           _SettingsTile(
             icon: Icons.upload_outlined,
-            title: 'Export Backup',
-            subtitle: 'Save a copy of all your trip data',
+            title: l.settingsExportBackup,
+            subtitle: l.settingsExportBackupSubtitle,
             color: TripReadyTheme.teal,
-            onTap: () => _exportBackup(context),
+            onTap: () => _exportBackup(context, l),
           ),
           _SettingsTile(
             icon: Icons.download_outlined,
-            title: 'Restore Backup',
-            subtitle: 'Restore from a previously exported backup file',
+            title: l.settingsRestoreBackup,
+            subtitle: l.settingsRestoreBackupSubtitle,
             color: TripReadyTheme.amber,
-            onTap: () => _importBackup(context),
+            onTap: () => _importBackup(context, l),
           ),
 
           const SizedBox(height: 24),
-          _SectionLabel('Danger Zone'),
+
+          // ── Danger Zone ──
+          _SectionLabel(l.settingsDangerZone),
           _SettingsTile(
             icon: Icons.delete_forever_outlined,
-            title: 'Reset App Data',
-            subtitle: 'Permanently delete all trips, packing lists, tasks and all other data',
+            title: l.settingsResetData,
+            subtitle: l.settingsResetDataSubtitle,
             color: TripReadyTheme.danger,
-            onTap: () => _resetAppData(context),
+            onTap: () => _resetAppData(context, l),
           ),
 
           const SizedBox(height: 24),
-          _SectionLabel('About'),
+
+          // ── About ──
+          _SectionLabel(l.settingsAbout),
           _SettingsTile(
             icon: Icons.info_outline,
-            title: 'TripReady',
-            subtitle: 'Version 1.0.0 · Personal travel planner',
+            title: l.appTitle,
+            subtitle: l.settingsAboutSubtitle,
             color: TripReadyTheme.navy,
-            onTap: () => _showAbout(context),
+            onTap: () => showAboutDialog(
+              context: context,
+              applicationName: 'TripReady',
+              applicationVersion: '1.1.0',
+              applicationLegalese:
+                  'Personal travel planner.\nAll data stored locally on your device.',
+            ),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _exportBackup(BuildContext context) async {
+  Future<void> _exportBackup(BuildContext context, AppLocalizations l) async {
     final scaffoldMsg = ScaffoldMessenger.of(context);
     final path = await BackupService.instance.exportBackup();
     if (path != null) {
       scaffoldMsg.showSnackBar(SnackBar(
-        content: Text('Backup saved to:\n$path'),
+        content: Text('${l.settingsExportBackup}:\n$path'),
         duration: const Duration(seconds: 6),
       ));
     } else {
       scaffoldMsg.showSnackBar(
-          const SnackBar(content: Text('Backup failed. No data found.')));
+          SnackBar(content: Text(l.settingsBackupFailed)));
     }
   }
 
-  Future<void> _importBackup(BuildContext context) async {
+  Future<void> _importBackup(BuildContext context, AppLocalizations l) async {
     final scaffoldMsg = ScaffoldMessenger.of(context);
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Restore Backup'),
-        content: const Text(
-          'This will replace ALL current data with the backup file. '
-          'Your current data will be lost.\n\nContinue?',
-        ),
+        title: Text(l.settingsRestoreConfirmTitle),
+        content: Text(l.settingsRestoreConfirmBody),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(l.actionCancel)),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: TripReadyTheme.danger),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: TripReadyTheme.danger),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Restore'),
+            child: Text(l.settingsRestoreBackup),
           ),
         ],
       ),
     );
     if (confirm != true) return;
     final success = await BackupService.instance.importBackup();
-    if (success) {
-      scaffoldMsg.showSnackBar(const SnackBar(
-        content: Text('Backup restored successfully. Please restart the app.'),
-        duration: Duration(seconds: 5),
-      ));
-    } else {
-      scaffoldMsg.showSnackBar(const SnackBar(
-          content: Text('Restore failed or cancelled. Your data is unchanged.')));
-    }
+    scaffoldMsg.showSnackBar(SnackBar(
+      content: Text(success
+          ? l.backupRestoredSuccess
+          : l.backupRestoreFailed),
+    ));
   }
 
-  Future<void> _resetAppData(BuildContext context) async {
+  Future<void> _resetAppData(BuildContext context, AppLocalizations l) async {
     final scaffoldMsg = ScaffoldMessenger.of(context);
 
-    // ── Step 1: first warning ──
     final step1 = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: Row(children: const [
-          Icon(Icons.warning_amber_rounded, color: TripReadyTheme.danger, size: 26),
-          SizedBox(width: 10),
-          Text('Reset App Data'),
+        title: Row(children: [
+          const Icon(Icons.warning_amber_rounded,
+              color: TripReadyTheme.danger, size: 26),
+          const SizedBox(width: 10),
+          Text(l.settingsResetStep1Title),
         ]),
-        content: const Text(
-          'This will permanently delete EVERYTHING:\n\n'
-          '• All trips (active, planned and archived)\n'
-          '• All packing lists and templates\n'
-          '• All tasks, addresses and documents\n'
-          '• All receipts and expense records\n\n'
-          'This action CANNOT be undone.\n\n'
-          'Are you sure you want to continue?',
-        ),
+        content: Text(l.settingsResetStep1Body),
         actions: [
           TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
+              child: Text(l.actionCancel)),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: TripReadyTheme.danger),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: TripReadyTheme.danger),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Continue'),
+            child: Text(l.settingsContinue),
           ),
         ],
       ),
     );
     if (step1 != true) return;
 
-    // ── Step 2: typed confirmation ──
     final step2 = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const _FinalResetConfirmDialog(),
+      builder: (_) => _FinalResetConfirmDialog(l: l),
     );
     if (step2 != true) return;
 
-    // ── Execute ──
     try {
       await DatabaseHelper.instance.resetAllData();
       if (context.mounted) {
-        // Rebuild the entire shell so all screens reinitialise from scratch
         Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
       }
     } catch (e) {
       if (context.mounted) {
-        scaffoldMsg.showSnackBar(SnackBar(content: Text('Reset failed: $e')));
+        scaffoldMsg.showSnackBar(SnackBar(content: Text('$e')));
       }
     }
   }
+}
 
-  void _showAbout(BuildContext context) {
-    showAboutDialog(
-      context: context,
-      applicationName: 'TripReady',
-      applicationVersion: '1.0.0',
-      applicationLegalese: 'Personal travel planner.\nAll data stored locally on your device.',
+// ── Language Dropdown Tile ────────────────────────────────────
+class _LanguageTile extends StatefulWidget {
+  const _LanguageTile();
+
+  @override
+  State<_LanguageTile> createState() => _LanguageTileState();
+}
+
+class _LanguageTileState extends State<_LanguageTile> {
+  @override
+  void initState() {
+    super.initState();
+    LanguageService.instance.addListener(_rebuild);
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final currentCode = LanguageService.instance.locale.languageCode;
+
+    final options = [
+      _LangOption(code: 'en', label: l.langEnglish, flag: '🇬🇧'),
+      _LangOption(code: 'he', label: l.langHebrew, flag: '🇮🇱'),
+    ];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: TripReadyTheme.navy.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.language_outlined,
+                color: TripReadyTheme.navy, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(l.settingsSelectLanguage,
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<String>(
+                value: currentCode,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: TripReadyTheme.warmGrey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: TripReadyTheme.teal, width: 2),
+                  ),
+                ),
+                items: options.map((opt) => DropdownMenuItem<String>(
+                  value: opt.code,
+                  child: Row(children: [
+                    Text(opt.flag, style: const TextStyle(fontSize: 20)),
+                    const SizedBox(width: 10),
+                    Text(opt.label, style: const TextStyle(fontSize: 14)),
+                  ]),
+                )).toList(),
+                onChanged: (code) {
+                  if (code != null) {
+                    LanguageService.instance.setLocale(Locale(code));
+                  }
+                },
+              ),
+            ]),
+          ),
+        ]),
+      ),
     );
   }
 }
 
-// ── Final confirmation dialog with typed keyword ──────────────
+class _LangOption {
+  final String code;
+  final String label;
+  final String flag;
+  const _LangOption({required this.code, required this.label, required this.flag});
+}
+
+// ── Final Reset Confirmation ──────────────────────────────────
 class _FinalResetConfirmDialog extends StatefulWidget {
-  const _FinalResetConfirmDialog();
+  final AppLocalizations l;
+  const _FinalResetConfirmDialog({required this.l});
 
   @override
   State<_FinalResetConfirmDialog> createState() =>
       _FinalResetConfirmDialogState();
 }
 
-class _FinalResetConfirmDialogState extends State<_FinalResetConfirmDialog> {
+class _FinalResetConfirmDialogState
+    extends State<_FinalResetConfirmDialog> {
   final _controller = TextEditingController();
   bool _confirmed = false;
-  static const _keyword = 'RESET';
 
   @override
   void initState() {
     super.initState();
     _controller.addListener(() {
-      setState(() => _confirmed = _controller.text.trim() == _keyword);
+      setState(() =>
+          _confirmed = _controller.text.trim() == widget.l.settingsResetKeyword);
     });
   }
 
@@ -200,13 +294,14 @@ class _FinalResetConfirmDialogState extends State<_FinalResetConfirmDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l = widget.l;
     return AlertDialog(
-      title: const Text('Final Confirmation'),
+      title: Text(l.settingsResetStep2Title),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('To confirm, type the word below exactly as shown:'),
+          Text(l.settingsResetStep2Body),
           const SizedBox(height: 12),
           Container(
             width: double.infinity,
@@ -214,12 +309,11 @@ class _FinalResetConfirmDialogState extends State<_FinalResetConfirmDialog> {
             decoration: BoxDecoration(
               color: TripReadyTheme.danger.withOpacity(0.08),
               borderRadius: BorderRadius.circular(10),
-              border:
-                  Border.all(color: TripReadyTheme.danger.withOpacity(0.4)),
+              border: Border.all(color: TripReadyTheme.danger.withOpacity(0.4)),
             ),
-            child: const Text(
-              _keyword,
-              style: TextStyle(
+            child: Text(
+              l.settingsResetKeyword,
+              style: const TextStyle(
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.w900,
                 fontSize: 20,
@@ -234,9 +328,9 @@ class _FinalResetConfirmDialogState extends State<_FinalResetConfirmDialog> {
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
             decoration: InputDecoration(
-              hintText: 'Type $_keyword here',
+              hintText: l.settingsResetKeyword,
               errorText: _controller.text.isNotEmpty && !_confirmed
-                  ? 'Must match exactly'
+                  ? l.resetConfirmMismatch
                   : null,
               suffixIcon: _confirmed
                   ? const Icon(Icons.check_circle, color: TripReadyTheme.success)
@@ -248,18 +342,17 @@ class _FinalResetConfirmDialogState extends State<_FinalResetConfirmDialog> {
       actions: [
         TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel')),
+            child: Text(l.actionCancel)),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor:
                 _confirmed ? TripReadyTheme.danger : Colors.grey.shade300,
           ),
-          onPressed: _confirmed ? () => Navigator.pop(context, true) : null,
-          child: Text(
-            'Reset Everything',
-            style: TextStyle(
-                color: _confirmed ? Colors.white : Colors.grey.shade500),
-          ),
+          onPressed:
+              _confirmed ? () => Navigator.pop(context, true) : null,
+          child: Text(l.settingsResetButton,
+              style: TextStyle(
+                  color: _confirmed ? Colors.white : Colors.grey.shade500)),
         ),
       ],
     );
@@ -278,10 +371,10 @@ class _SectionLabel extends StatelessWidget {
       child: Text(
         label.toUpperCase(),
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: TripReadyTheme.teal,
-          letterSpacing: 1,
-          fontSize: 11,
-        ),
+              color: TripReadyTheme.teal,
+              letterSpacing: 1,
+              fontSize: 11,
+            ),
       ),
     );
   }
@@ -310,8 +403,7 @@ class _SettingsTile extends StatelessWidget {
         onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
-          width: 44,
-          height: 44,
+          width: 44, height: 44,
           decoration: BoxDecoration(
             color: color.withOpacity(0.12),
             borderRadius: BorderRadius.circular(12),

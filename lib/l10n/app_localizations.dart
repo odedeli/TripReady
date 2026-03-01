@@ -1,0 +1,1446 @@
+// ignore_for_file: type=lint
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+
+abstract class AppLocalizations {
+  AppLocalizations(this.localeName);
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) =>
+      Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = [
+    _AppLocalizationsDelegate(),
+    GlobalMaterialLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+  ];
+
+  static const List<Locale> supportedLocales = [Locale('en'), Locale('he')];
+
+  String get appTitle;
+  String get navDashboard;
+  String get navMyTrips;
+  String get navArchive;
+  String get navSettings;
+  String get actionSave;
+  String get actionCancel;
+  String get actionDelete;
+  String get actionEdit;
+  String get actionAdd;
+  String get actionClose;
+  String get actionConfirm;
+  String get actionBack;
+  String get actionYes;
+  String get actionNo;
+  String get actionUpdate;
+  String get actionApply;
+  String get actionClear;
+  String get fieldNotes;
+  String get fieldName;
+  String get fieldCategory;
+  String get fieldDate;
+  String get fieldPhone;
+  String get fieldWebsite;
+  String get fieldAddress;
+  String get fieldStatus;
+  String get fieldQuantity;
+  String get fieldStoragePlace;
+  String get fieldCurrency;
+  String get fieldAmount;
+  String get dashboardTitle;
+  String get dashboardActiveTrip;
+  String get dashboardNoActiveTrip;
+  String get dashboardStartPlanning;
+  String get dashboardPackingProgress;
+  String get dashboardTaskProgress;
+  String get dashboardDepartingToday;
+  String get dashboardDepartingTomorrow;
+  String get dashboardPacked;
+  String get dashboardTasksDone;
+  String get dashboardExpenses;
+  String get dashboardSpent;
+  String get tripsTitle;
+  String get tripsNewTrip;
+  String get tripsAddTrip;
+  String get tripsEditTrip;
+  String get tripsDeleteTrip;
+  String get tripsArchiveTrip;
+  String get tripsSetActive;
+  String get tripsTripName;
+  String get tripsDestination;
+  String get tripsCountry;
+  String get tripsTripType;
+  String get tripsTripPurpose;
+  String get tripsDeparture;
+  String get tripsReturn;
+  String get tripsDuration;
+  String get tripsNoTrips;
+  String get tripsNoTripsSubtitle;
+  String get tripsTabActive;
+  String get tripsTabPlanned;
+  String get tripsTabArchived;
+  String get tripsStatusActive;
+  String get tripsStatusPlanned;
+  String get tripsStatusArchived;
+  String get tripDetailTitle;
+  String get tripDetailOverview;
+  String get tripDetailSections;
+  String get tripDetailDepartingToday;
+  String get tripDetailDepartingTomorrow;
+  String get packingTitle;
+  String get packingAddItem;
+  String get packingEditItem;
+  String get packingItemName;
+  String get packingProgress;
+  String get packingStatusPacked;
+  String get packingStatusNotPacked;
+  String get packingSaveTemplate;
+  String get packingLoadTemplate;
+  String get packingExportExcel;
+  String get packingImportExcel;
+  String get packingUncheckAll;
+  String get packingDeleteAll;
+  String get packingNoItems;
+  String get packingNoItemsSubtitle;
+  String get packingItemTasks;
+  String get packingAllTasksDone;
+  String get packingDeselectAll;
+  String get packingMarkPacked;
+  String get packingMarkUnpacked;
+  String get packingTemplateTitle;
+  String get packingTemplateDescription;
+  String get packingNoTemplates;
+  String get packingLoadTemplateTitle;
+  String get packingSaveTemplateTitle;
+  String get tasksTitle;
+  String get tasksAddTask;
+  String get tasksTaskName;
+  String get tasksDueDate;
+  String get tasksProgress;
+  String get tasksTabPending;
+  String get tasksTabInProgress;
+  String get tasksTabDone;
+  String get tasksStatusPending;
+  String get tasksStatusInProgress;
+  String get tasksStatusDone;
+  String get tasksOverdue;
+  String get tasksNoPending;
+  String get tasksNoInProgress;
+  String get tasksNoDone;
+  String get tasksStart;
+  String get tasksComplete;
+  String get tasksMarkPending;
+  String get tasksMarkInProgress;
+  String get tasksMarkDone;
+  String get addressesTitle;
+  String get addressesAddAddress;
+  String get addressesMapButton;
+  String get addressesNoAddresses;
+  String get addressesNoAddressesSubtitle;
+  String get addressesCatHotel;
+  String get addressesCatAirport;
+  String get addressesCatRestaurant;
+  String get addressesCatLandmark;
+  String get addressesCatOffice;
+  String get addressesCatHospital;
+  String get addressesCatTransport;
+  String get addressesCatShopping;
+  String get addressesCatOther;
+  String get receiptsTitle;
+  String get receiptsAddReceipt;
+  String get receiptsReceiptName;
+  String get receiptsTotalExpenses;
+  String get receiptsNoReceipts;
+  String get receiptsNoReceiptsSubtitle;
+  String get receiptsPhotoAttached;
+  String get receiptsCatFood;
+  String get receiptsCatTransport;
+  String get receiptsCatAccommodation;
+  String get receiptsCatEntertainment;
+  String get receiptsCatShopping;
+  String get receiptsCatHealth;
+  String get receiptsCatCommunication;
+  String get receiptsCatFees;
+  String get receiptsCatOther;
+  String get documentsTitle;
+  String get documentsAddDocument;
+  String get documentsDocumentName;
+  String get documentsNoDocuments;
+  String get documentsNoDocumentsSubtitle;
+  String get documentsNoFileAttached;
+  String get documentsFileAttached;
+  String get documentsTypeTicket;
+  String get documentsTypeVoucher;
+  String get documentsTypeLetter;
+  String get documentsTypePassport;
+  String get documentsTypeVisa;
+  String get documentsTypeInsurance;
+  String get documentsTypeReservation;
+  String get documentsTypeItinerary;
+  String get documentsTypeOther;
+  String get archiveTitle;
+  String get archiveNoTrips;
+  String get archiveNoTripsSubtitle;
+  String get archiveCloneTrip;
+  String get archiveCloneTitle;
+  String get archiveCloneNewName;
+  String get archiveClonePacking;
+  String get archiveClonePackingSubtitle;
+  String get archiveCloneTasks;
+  String get archiveCloneTasksSubtitle;
+  String get archiveCloneAddresses;
+  String get archiveCloneAddressesSubtitle;
+  String get settingsTitle;
+  String get settingsDataManagement;
+  String get settingsExportBackup;
+  String get settingsExportBackupSubtitle;
+  String get settingsRestoreBackup;
+  String get settingsRestoreBackupSubtitle;
+  String get settingsDangerZone;
+  String get settingsResetData;
+  String get settingsResetDataSubtitle;
+  String get settingsLanguage;
+  String get settingsSelectLanguage;
+  String get settingsLanguageEditor;
+  String get settingsLanguageEditorSubtitle;
+  String get settingsAbout;
+  String get settingsAboutSubtitle;
+  String get settingsRestoreConfirmTitle;
+  String get settingsRestoreConfirmBody;
+  String get settingsResetStep1Title;
+  String get settingsResetStep1Body;
+  String get settingsResetStep2Title;
+  String get settingsResetStep2Body;
+  String get settingsResetKeyword;
+  String get settingsResetButton;
+  String get settingsResetSuccess;
+  String get langEnglish;
+  String get langHebrew;
+  String get tripTypeLeisure;
+  String get tripTypeBusiness;
+  String get tripTypeFamily;
+  String get tripPurposeHoliday;
+  String get tripPurposeWorkTrip;
+  String get tripPurposeFamilyVisit;
+  String get tripPurposeConference;
+  String get packingCatClothing;
+  String get packingCatToiletries;
+  String get packingCatElectronics;
+  String get packingCatDocuments;
+  String get packingCatMedication;
+  String get packingCatFoodSnacks;
+  String get packingCatAccessories;
+  String get packingCatSportOutdoor;
+  String get packingCatBabyKids;
+  String get packingCatWorkOffice;
+  String get packingCatOther;
+  String get storageCheckin;
+  String get storageHandLuggage;
+  String get storageBackpack;
+  String get storageToiletryBag;
+  String get storageLaptopBag;
+  String get storageHandbag;
+  String get storageWallet;
+  String get storageMoneyBelt;
+  String get storageCarBoot;
+  String get storageShippingBox;
+  String get storageOther;
+  String get packingItemNameHint;
+  String get packingItemNameRequired;
+  String get packingSelectCategory;
+  String get packingStoragePlaceHint;
+  String get packingCustomStorageHint;
+  String get packingNotesHint;
+  String get packingItemTasksLabel;
+  String get packingItemTasksHint;
+  String get packingAddTaskHint;
+  String get packingUpdateItem;
+  String get packingErrorSaving;
+  String get templateSaveTitle;
+  String get templateNameLabel;
+  String get templateNameHint;
+  String get templateDescLabel;
+  String get templateDescHint;
+  String get templateSaveButton;
+  String get templateErrorSaving;
+  String get templateLoadTitle;
+  String get templateNoTemplates;
+  String get templateNoTemplatesSubtitle;
+  String get tripTypeAdventure;
+  String get tripTypeMedical;
+  String get tripTypeOther;
+  String get tripPurposeMedical;
+  String get tripPurposeOther;
+  String get packingUncategorised;
+  String get packingExcelHeaderName;
+  String get packingExcelHeaderCategory;
+  String get packingExcelHeaderQuantity;
+  String get packingExcelHeaderStorage;
+  String get packingExcelHeaderStatus;
+  String get packingExcelHeaderNotes;
+  String get tripDetailTypeBadge;
+  String get validatorRequired;
+  String get backupRestoredSuccess;
+  String get backupRestoreFailed;
+  String get resetConfirmMismatch;
+  String get settingsContinue;
+  String get settingsBackupFailed;
+  String get imageLoadError;
+  String fieldExchangeRate(String currency);
+  String dashboardDaysUntil(int days);
+  String tripsDays(int count);
+  String tripDetailDaysUntil(int days);
+  String packingPackedCount(int packed, int total);
+  String packingTasksPending(int count);
+  String packingSelectAll(int count);
+  String tasksDoneCount(int done, int total);
+  String templateSaveSubtitle(int count);
+  String templateItemCount(int count);
+  String packingSelectedCount(int count);
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+  @override
+  bool isSupported(Locale l) => ['en', 'he'].contains(l.languageCode);
+  @override
+  Future<AppLocalizations> load(Locale l) async =>
+      l.languageCode == 'he' ? _AppLocalizationsHe() : _AppLocalizationsEn();
+  @override
+  bool shouldReload(_) => false;
+}
+
+// ── English ───────────────────────────────────────────────────
+class _AppLocalizationsEn extends AppLocalizations {
+  _AppLocalizationsEn() : super('en');
+  @override
+  String get appTitle => 'TripReady';
+  @override
+  String get navDashboard => 'Dashboard';
+  @override
+  String get navMyTrips => 'My Trips';
+  @override
+  String get navArchive => 'Archive';
+  @override
+  String get navSettings => 'Settings';
+  @override
+  String get actionSave => 'Save';
+  @override
+  String get actionCancel => 'Cancel';
+  @override
+  String get actionDelete => 'Delete';
+  @override
+  String get actionEdit => 'Edit';
+  @override
+  String get actionAdd => 'Add';
+  @override
+  String get actionClose => 'Close';
+  @override
+  String get actionConfirm => 'Confirm';
+  @override
+  String get actionBack => 'Back';
+  @override
+  String get actionYes => 'Yes';
+  @override
+  String get actionNo => 'No';
+  @override
+  String get actionUpdate => 'Update';
+  @override
+  String get actionApply => 'Apply';
+  @override
+  String get actionClear => 'Clear Filters';
+  @override
+  String get fieldNotes => 'Notes';
+  @override
+  String get fieldName => 'Name';
+  @override
+  String get fieldCategory => 'Category';
+  @override
+  String get fieldDate => 'Date';
+  @override
+  String get fieldPhone => 'Phone';
+  @override
+  String get fieldWebsite => 'Website';
+  @override
+  String get fieldAddress => 'Address';
+  @override
+  String get fieldStatus => 'Status';
+  @override
+  String get fieldQuantity => 'Quantity';
+  @override
+  String get fieldStoragePlace => 'Storage Place';
+  @override
+  String get fieldCurrency => 'Currency';
+  @override
+  String get fieldAmount => 'Amount';
+  @override
+  String get dashboardTitle => 'Dashboard';
+  @override
+  String get dashboardActiveTrip => 'Active Trip';
+  @override
+  String get dashboardNoActiveTrip => 'No active trip';
+  @override
+  String get dashboardStartPlanning => 'Start planning your next trip';
+  @override
+  String get dashboardPackingProgress => 'Packing Progress';
+  @override
+  String get dashboardTaskProgress => 'Task Progress';
+  @override
+  String get dashboardDepartingToday => '🛫 Departing today!';
+  @override
+  String get dashboardDepartingTomorrow => '🗓 Departing tomorrow!';
+  @override
+  String get dashboardPacked => 'Packed';
+  @override
+  String get dashboardTasksDone => 'Tasks Done';
+  @override
+  String get dashboardExpenses => 'Expenses';
+  @override
+  String get dashboardSpent => 'Spent';
+  @override
+  String get tripsTitle => 'My Trips';
+  @override
+  String get tripsNewTrip => 'New Trip';
+  @override
+  String get tripsAddTrip => 'Add Trip';
+  @override
+  String get tripsEditTrip => 'Edit Trip';
+  @override
+  String get tripsDeleteTrip => 'Delete Trip';
+  @override
+  String get tripsArchiveTrip => 'Archive Trip';
+  @override
+  String get tripsSetActive => 'Set as Active';
+  @override
+  String get tripsTripName => 'Trip Name';
+  @override
+  String get tripsDestination => 'Destination';
+  @override
+  String get tripsCountry => 'Country';
+  @override
+  String get tripsTripType => 'Trip Type';
+  @override
+  String get tripsTripPurpose => 'Trip Purpose';
+  @override
+  String get tripsDeparture => 'Departure';
+  @override
+  String get tripsReturn => 'Return';
+  @override
+  String get tripsDuration => 'Duration';
+  @override
+  String get tripsNoTrips => 'No trips yet';
+  @override
+  String get tripsNoTripsSubtitle => 'Tap the button below to add your first trip.';
+  @override
+  String get tripsTabActive => 'Active';
+  @override
+  String get tripsTabPlanned => 'Planned';
+  @override
+  String get tripsTabArchived => 'Archived';
+  @override
+  String get tripsStatusActive => 'Active';
+  @override
+  String get tripsStatusPlanned => 'Planned';
+  @override
+  String get tripsStatusArchived => 'Archived';
+  @override
+  String get tripDetailTitle => 'Trip Detail';
+  @override
+  String get tripDetailOverview => 'Overview';
+  @override
+  String get tripDetailSections => 'Trip Sections';
+  @override
+  String get tripDetailDepartingToday => '🛫 Departing today!';
+  @override
+  String get tripDetailDepartingTomorrow => '🗓 Departing tomorrow!';
+  @override
+  String get packingTitle => 'Packing List';
+  @override
+  String get packingAddItem => 'Add Item';
+  @override
+  String get packingEditItem => 'Edit Item';
+  @override
+  String get packingItemName => 'Item Name';
+  @override
+  String get packingProgress => 'Packing Progress';
+  @override
+  String get packingStatusPacked => 'Packed';
+  @override
+  String get packingStatusNotPacked => 'Not Packed';
+  @override
+  String get packingSaveTemplate => 'Save as Template';
+  @override
+  String get packingLoadTemplate => 'Load Template';
+  @override
+  String get packingExportExcel => 'Export as Excel';
+  @override
+  String get packingImportExcel => 'Import from Excel';
+  @override
+  String get packingUncheckAll => 'Uncheck All Items';
+  @override
+  String get packingDeleteAll => 'Delete All Items';
+  @override
+  String get packingNoItems => 'No items yet';
+  @override
+  String get packingNoItemsSubtitle => 'Add items manually, load a template, or import from Excel.';
+  @override
+  String get packingItemTasks => 'Item Tasks';
+  @override
+  String get packingAllTasksDone => 'All tasks done';
+  @override
+  String get packingDeselectAll => 'Deselect all';
+  @override
+  String get packingMarkPacked => 'Mark as Packed';
+  @override
+  String get packingMarkUnpacked => 'Mark as Not Packed';
+  @override
+  String get packingTemplateTitle => 'Template Name';
+  @override
+  String get packingTemplateDescription => 'Description';
+  @override
+  String get packingNoTemplates => 'No templates saved yet';
+  @override
+  String get packingLoadTemplateTitle => 'Load Template';
+  @override
+  String get packingSaveTemplateTitle => 'Save as Template';
+  @override
+  String get tasksTitle => 'Tasks';
+  @override
+  String get tasksAddTask => 'Add Task';
+  @override
+  String get tasksTaskName => 'Task Name';
+  @override
+  String get tasksDueDate => 'Due Date';
+  @override
+  String get tasksProgress => 'Task Progress';
+  @override
+  String get tasksTabPending => 'Pending';
+  @override
+  String get tasksTabInProgress => 'In Progress';
+  @override
+  String get tasksTabDone => 'Done';
+  @override
+  String get tasksStatusPending => 'Pending';
+  @override
+  String get tasksStatusInProgress => 'In Progress';
+  @override
+  String get tasksStatusDone => 'Done';
+  @override
+  String get tasksOverdue => 'OVERDUE';
+  @override
+  String get tasksNoPending => 'No pending tasks';
+  @override
+  String get tasksNoInProgress => 'No tasks in progress';
+  @override
+  String get tasksNoDone => 'No completed tasks yet';
+  @override
+  String get tasksStart => 'Start';
+  @override
+  String get tasksComplete => 'Complete';
+  @override
+  String get tasksMarkPending => 'Mark as Pending';
+  @override
+  String get tasksMarkInProgress => 'Mark as In Progress';
+  @override
+  String get tasksMarkDone => 'Mark as Done';
+  @override
+  String get addressesTitle => 'Addresses';
+  @override
+  String get addressesAddAddress => 'Add Address';
+  @override
+  String get addressesMapButton => 'Map';
+  @override
+  String get addressesNoAddresses => 'No addresses saved';
+  @override
+  String get addressesNoAddressesSubtitle => 'Add hotels, restaurants, landmarks and more.';
+  @override
+  String get addressesCatHotel => 'Hotel';
+  @override
+  String get addressesCatAirport => 'Airport';
+  @override
+  String get addressesCatRestaurant => 'Restaurant';
+  @override
+  String get addressesCatLandmark => 'Landmark';
+  @override
+  String get addressesCatOffice => 'Office';
+  @override
+  String get addressesCatHospital => 'Hospital';
+  @override
+  String get addressesCatTransport => 'Transport';
+  @override
+  String get addressesCatShopping => 'Shopping';
+  @override
+  String get addressesCatOther => 'Other';
+  @override
+  String get receiptsTitle => 'Receipts & Expenses';
+  @override
+  String get receiptsAddReceipt => 'Add Receipt';
+  @override
+  String get receiptsReceiptName => 'Receipt Name';
+  @override
+  String get receiptsTotalExpenses => 'Total Expenses';
+  @override
+  String get receiptsNoReceipts => 'No receipts yet';
+  @override
+  String get receiptsNoReceiptsSubtitle => 'Track your expenses by adding receipts.';
+  @override
+  String get receiptsPhotoAttached => 'Photo attached';
+  @override
+  String get receiptsCatFood => 'Food & Drink';
+  @override
+  String get receiptsCatTransport => 'Transport';
+  @override
+  String get receiptsCatAccommodation => 'Accommodation';
+  @override
+  String get receiptsCatEntertainment => 'Entertainment';
+  @override
+  String get receiptsCatShopping => 'Shopping';
+  @override
+  String get receiptsCatHealth => 'Health';
+  @override
+  String get receiptsCatCommunication => 'Communication';
+  @override
+  String get receiptsCatFees => 'Fees & Charges';
+  @override
+  String get receiptsCatOther => 'Other';
+  @override
+  String get documentsTitle => 'Documents';
+  @override
+  String get documentsAddDocument => 'Add Document';
+  @override
+  String get documentsDocumentName => 'Document Name';
+  @override
+  String get documentsNoDocuments => 'No documents yet';
+  @override
+  String get documentsNoDocumentsSubtitle => 'Add tickets, vouchers, letters and other documents.';
+  @override
+  String get documentsNoFileAttached => 'No file attached';
+  @override
+  String get documentsFileAttached => 'File attached';
+  @override
+  String get documentsTypeTicket => 'Ticket';
+  @override
+  String get documentsTypeVoucher => 'Voucher';
+  @override
+  String get documentsTypeLetter => 'Letter';
+  @override
+  String get documentsTypePassport => 'Passport';
+  @override
+  String get documentsTypeVisa => 'Visa';
+  @override
+  String get documentsTypeInsurance => 'Insurance';
+  @override
+  String get documentsTypeReservation => 'Reservation';
+  @override
+  String get documentsTypeItinerary => 'Itinerary';
+  @override
+  String get documentsTypeOther => 'Other';
+  @override
+  String get archiveTitle => 'Archive';
+  @override
+  String get archiveNoTrips => 'No archived trips';
+  @override
+  String get archiveNoTripsSubtitle => 'Trips you archive will appear here for reference.';
+  @override
+  String get archiveCloneTrip => 'Clone to New Trip';
+  @override
+  String get archiveCloneTitle => 'Clone Trip';
+  @override
+  String get archiveCloneNewName => 'New Trip Name';
+  @override
+  String get archiveClonePacking => 'Packing List';
+  @override
+  String get archiveClonePackingSubtitle => 'All items (reset to unpacked)';
+  @override
+  String get archiveCloneTasks => 'Tasks';
+  @override
+  String get archiveCloneTasksSubtitle => 'All tasks (reset to pending)';
+  @override
+  String get archiveCloneAddresses => 'Addresses';
+  @override
+  String get archiveCloneAddressesSubtitle => 'Hotels, restaurants, landmarks';
+  @override
+  String get settingsTitle => 'Settings';
+  @override
+  String get settingsDataManagement => 'Data Management';
+  @override
+  String get settingsExportBackup => 'Export Backup';
+  @override
+  String get settingsExportBackupSubtitle => 'Save a copy of all your trip data';
+  @override
+  String get settingsRestoreBackup => 'Restore Backup';
+  @override
+  String get settingsRestoreBackupSubtitle => 'Restore from a previously exported backup file';
+  @override
+  String get settingsDangerZone => 'Danger Zone';
+  @override
+  String get settingsResetData => 'Reset App Data';
+  @override
+  String get settingsResetDataSubtitle => 'Permanently delete all trips, packing lists, tasks and all other data';
+  @override
+  String get settingsLanguage => 'Language';
+  @override
+  String get settingsSelectLanguage => 'Select Language';
+  @override
+  String get settingsLanguageEditor => 'Edit Translations';
+  @override
+  String get settingsLanguageEditorSubtitle => 'View and customise translated strings';
+  @override
+  String get settingsAbout => 'About';
+  @override
+  String get settingsAboutSubtitle => 'Version 1.1.0 · Personal travel planner';
+  @override
+  String get settingsRestoreConfirmTitle => 'Restore Backup';
+  @override
+  String get settingsRestoreConfirmBody => 'This will replace ALL current data with the backup file. Your current data will be lost.\n\nContinue?';
+  @override
+  String get settingsResetStep1Title => 'Reset App Data';
+  @override
+  String get settingsResetStep1Body => 'This will permanently delete EVERYTHING:\n\n• All trips (active, planned and archived)\n• All packing lists and templates\n• All tasks, addresses and documents\n• All receipts and expense records\n\nThis action CANNOT be undone.\n\nAre you sure you want to continue?';
+  @override
+  String get settingsResetStep2Title => 'Final Confirmation';
+  @override
+  String get settingsResetStep2Body => 'To confirm, type the word below exactly as shown:';
+  @override
+  String get settingsResetKeyword => 'RESET';
+  @override
+  String get settingsResetButton => 'Reset Everything';
+  @override
+  String get settingsResetSuccess => 'App data has been reset. All records deleted.';
+  @override
+  String get langEnglish => 'English';
+  @override
+  String get langHebrew => 'עברית';
+  @override
+  String get tripTypeLeisure => 'Leisure';
+  @override
+  String get tripTypeBusiness => 'Business';
+  @override
+  String get tripTypeFamily => 'Family';
+  @override
+  String get tripPurposeHoliday => 'Holiday';
+  @override
+  String get tripPurposeWorkTrip => 'Work Trip';
+  @override
+  String get tripPurposeFamilyVisit => 'Family Visit';
+  @override
+  String get tripPurposeConference => 'Conference';
+  @override
+  String get packingCatClothing => 'Clothing';
+  @override
+  String get packingCatToiletries => 'Toiletries';
+  @override
+  String get packingCatElectronics => 'Electronics';
+  @override
+  String get packingCatDocuments => 'Documents';
+  @override
+  String get packingCatMedication => 'Medication';
+  @override
+  String get packingCatFoodSnacks => 'Food & Snacks';
+  @override
+  String get packingCatAccessories => 'Accessories';
+  @override
+  String get packingCatSportOutdoor => 'Sport & Outdoor';
+  @override
+  String get packingCatBabyKids => 'Baby & Kids';
+  @override
+  String get packingCatWorkOffice => 'Work & Office';
+  @override
+  String get packingCatOther => 'Other';
+  @override
+  String get storageCheckin => 'Check-in Luggage';
+  @override
+  String get storageHandLuggage => 'Hand Luggage';
+  @override
+  String get storageBackpack => 'Backpack';
+  @override
+  String get storageToiletryBag => 'Toiletry Bag';
+  @override
+  String get storageLaptopBag => 'Laptop Bag';
+  @override
+  String get storageHandbag => 'Handbag / Purse';
+  @override
+  String get storageWallet => 'Wallet';
+  @override
+  String get storageMoneyBelt => 'Money Belt';
+  @override
+  String get storageCarBoot => 'Car Boot';
+  @override
+  String get storageShippingBox => 'Shipping Box';
+  @override
+  String get storageOther => 'Other';
+  @override
+  String get packingItemNameHint => 'e.g. Passport, Charger, T-shirt...';
+  @override
+  String get packingItemNameRequired => 'Item name is required';
+  @override
+  String get packingSelectCategory => 'Select a category';
+  @override
+  String get packingStoragePlaceHint => 'Where will you store this?';
+  @override
+  String get packingCustomStorageHint => 'e.g. Luggage 23 kg, Camera Bag...';
+  @override
+  String get packingNotesHint => 'Any notes about this item...';
+  @override
+  String get packingItemTasksLabel => 'Item Tasks';
+  @override
+  String get packingItemTasksHint => 'e.g. to buy, to iron';
+  @override
+  String get packingAddTaskHint => 'Add a task for this item...';
+  @override
+  String get packingUpdateItem => 'Update Item';
+  @override
+  String get packingErrorSaving => 'Error saving item';
+  @override
+  String get templateSaveTitle => 'Save as Template';
+  @override
+  String get templateNameLabel => 'Template Name';
+  @override
+  String get templateNameHint => 'e.g. Summer Holiday Packing';
+  @override
+  String get templateDescLabel => 'Description (optional)';
+  @override
+  String get templateDescHint => 'e.g. For 1-2 week beach trips';
+  @override
+  String get templateSaveButton => 'Save Template';
+  @override
+  String get templateErrorSaving => 'Error saving template';
+  @override
+  String get templateLoadTitle => 'Load Template';
+  @override
+  String get templateNoTemplates => 'No templates saved yet';
+  @override
+  String get templateNoTemplatesSubtitle => 'Save a packing list as a template first.';
+  @override
+  String get tripTypeAdventure => 'Adventure';
+  @override
+  String get tripTypeMedical => 'Medical';
+  @override
+  String get tripTypeOther => 'Other';
+  @override
+  String get tripPurposeMedical => 'Medical';
+  @override
+  String get tripPurposeOther => 'Other';
+  @override
+  String get packingUncategorised => 'Uncategorised';
+  @override
+  String get packingExcelHeaderName => 'Name';
+  @override
+  String get packingExcelHeaderCategory => 'Category';
+  @override
+  String get packingExcelHeaderQuantity => 'Quantity';
+  @override
+  String get packingExcelHeaderStorage => 'Storage Place';
+  @override
+  String get packingExcelHeaderStatus => 'Status';
+  @override
+  String get packingExcelHeaderNotes => 'Notes';
+  @override
+  String get tripDetailTypeBadge => 'Type';
+  @override
+  String get validatorRequired => 'Required';
+  @override
+  String get backupRestoredSuccess => 'Backup restored successfully. Restart the app to see changes.';
+  @override
+  String get backupRestoreFailed => 'Restore failed or cancelled. Your data is unchanged.';
+  @override
+  String get resetConfirmMismatch => 'Must match exactly';
+  @override
+  String get settingsContinue => 'Continue';
+  @override
+  String get settingsBackupFailed => 'Backup failed. No data found.';
+  @override
+  String get imageLoadError => 'Could not load image';
+  @override
+  String fieldExchangeRate(String currency) => 'Exchange Rate to ' + currency.toString() + '';
+  @override
+  String dashboardDaysUntil(int days) => days.toString() + ' days until departure';
+  @override
+  String tripsDays(int count) => count.toString() + ' days';
+  @override
+  String tripDetailDaysUntil(int days) => days.toString() + ' days until departure';
+  @override
+  String packingPackedCount(int packed, int total) => packed.toString() + ' / ' + total.toString() + ' packed';
+  @override
+  String packingTasksPending(int count) => count.toString() + ' task(s) pending';
+  @override
+  String packingSelectAll(int count) => 'Select all (' + count.toString() + ')';
+  @override
+  String tasksDoneCount(int done, int total) => done.toString() + ' / ' + total.toString() + ' completed';
+  @override
+  String templateSaveSubtitle(int count) => 'This will save ' + count.toString() + ' item(s) as a reusable template.';
+  @override
+  String templateItemCount(int count) => count.toString() + ' items';
+  @override
+  String packingSelectedCount(int count) => count.toString() + ' selected';
+}
+
+// ── Hebrew ────────────────────────────────────────────────────
+class _AppLocalizationsHe extends AppLocalizations {
+  _AppLocalizationsHe() : super('he');
+  @override
+  String get appTitle => 'TripReady';
+  @override
+  String get navDashboard => 'לוח בקרה';
+  @override
+  String get navMyTrips => 'הנסיעות שלי';
+  @override
+  String get navArchive => 'ארכיון';
+  @override
+  String get navSettings => 'הגדרות';
+  @override
+  String get actionSave => 'שמור';
+  @override
+  String get actionCancel => 'ביטול';
+  @override
+  String get actionDelete => 'מחק';
+  @override
+  String get actionEdit => 'ערוך';
+  @override
+  String get actionAdd => 'הוסף';
+  @override
+  String get actionClose => 'סגור';
+  @override
+  String get actionConfirm => 'אישור';
+  @override
+  String get actionBack => 'חזרה';
+  @override
+  String get actionYes => 'כן';
+  @override
+  String get actionNo => 'לא';
+  @override
+  String get actionUpdate => 'עדכן';
+  @override
+  String get actionApply => 'החל';
+  @override
+  String get actionClear => 'נקה סינון';
+  @override
+  String get fieldNotes => 'הערות';
+  @override
+  String get fieldName => 'שם';
+  @override
+  String get fieldCategory => 'קטגוריה';
+  @override
+  String get fieldDate => 'תאריך';
+  @override
+  String get fieldPhone => 'טלפון';
+  @override
+  String get fieldWebsite => 'אתר אינטרנט';
+  @override
+  String get fieldAddress => 'כתובת';
+  @override
+  String get fieldStatus => 'סטטוס';
+  @override
+  String get fieldQuantity => 'כמות';
+  @override
+  String get fieldStoragePlace => 'מקום אחסון';
+  @override
+  String get fieldCurrency => 'מטבע';
+  @override
+  String get fieldAmount => 'סכום';
+  @override
+  String get dashboardTitle => 'לוח בקרה';
+  @override
+  String get dashboardActiveTrip => 'נסיעה פעילה';
+  @override
+  String get dashboardNoActiveTrip => 'אין נסיעה פעילה';
+  @override
+  String get dashboardStartPlanning => 'התחל לתכנן את הנסיעה הבאה שלך';
+  @override
+  String get dashboardPackingProgress => 'התקדמות אריזה';
+  @override
+  String get dashboardTaskProgress => 'התקדמות משימות';
+  @override
+  String get dashboardDepartingToday => '🛫 יוצאים היום!';
+  @override
+  String get dashboardDepartingTomorrow => '🗓 יוצאים מחר!';
+  @override
+  String get dashboardPacked => 'ארוז';
+  @override
+  String get dashboardTasksDone => 'משימות שבוצעו';
+  @override
+  String get dashboardExpenses => 'הוצאות';
+  @override
+  String get dashboardSpent => 'הוצאתי';
+  @override
+  String get tripsTitle => 'הנסיעות שלי';
+  @override
+  String get tripsNewTrip => 'נסיעה חדשה';
+  @override
+  String get tripsAddTrip => 'הוסף נסיעה';
+  @override
+  String get tripsEditTrip => 'ערוך נסיעה';
+  @override
+  String get tripsDeleteTrip => 'מחק נסיעה';
+  @override
+  String get tripsArchiveTrip => 'העבר לארכיון';
+  @override
+  String get tripsSetActive => 'הגדר כפעילה';
+  @override
+  String get tripsTripName => 'שם הנסיעה';
+  @override
+  String get tripsDestination => 'יעד';
+  @override
+  String get tripsCountry => 'מדינה';
+  @override
+  String get tripsTripType => 'סוג הנסיעה';
+  @override
+  String get tripsTripPurpose => 'מטרת הנסיעה';
+  @override
+  String get tripsDeparture => 'יציאה';
+  @override
+  String get tripsReturn => 'חזרה';
+  @override
+  String get tripsDuration => 'משך';
+  @override
+  String get tripsNoTrips => 'אין נסיעות עדיין';
+  @override
+  String get tripsNoTripsSubtitle => 'לחץ על הכפתור למטה להוספת הנסיעה הראשונה.';
+  @override
+  String get tripsTabActive => 'פעיל';
+  @override
+  String get tripsTabPlanned => 'מתוכנן';
+  @override
+  String get tripsTabArchived => 'בארכיון';
+  @override
+  String get tripsStatusActive => 'פעילה';
+  @override
+  String get tripsStatusPlanned => 'מתוכננת';
+  @override
+  String get tripsStatusArchived => 'בארכיון';
+  @override
+  String get tripDetailTitle => 'פרטי נסיעה';
+  @override
+  String get tripDetailOverview => 'סקירה כללית';
+  @override
+  String get tripDetailSections => 'חלקי הנסיעה';
+  @override
+  String get tripDetailDepartingToday => '🛫 יוצאים היום!';
+  @override
+  String get tripDetailDepartingTomorrow => '🗓 יוצאים מחר!';
+  @override
+  String get packingTitle => 'רשימת אריזה';
+  @override
+  String get packingAddItem => 'הוסף פריט';
+  @override
+  String get packingEditItem => 'ערוך פריט';
+  @override
+  String get packingItemName => 'שם פריט';
+  @override
+  String get packingProgress => 'התקדמות אריזה';
+  @override
+  String get packingStatusPacked => 'ארוז';
+  @override
+  String get packingStatusNotPacked => 'לא ארוז';
+  @override
+  String get packingSaveTemplate => 'שמור כתבנית';
+  @override
+  String get packingLoadTemplate => 'טען תבנית';
+  @override
+  String get packingExportExcel => 'ייצא לאקסל';
+  @override
+  String get packingImportExcel => 'ייבא מאקסל';
+  @override
+  String get packingUncheckAll => 'בטל סימון לכל הפריטים';
+  @override
+  String get packingDeleteAll => 'מחק את כל הפריטים';
+  @override
+  String get packingNoItems => 'אין פריטים עדיין';
+  @override
+  String get packingNoItemsSubtitle => 'הוסף פריטים ידנית, טען תבנית, או ייבא מאקסל.';
+  @override
+  String get packingItemTasks => 'משימות פריט';
+  @override
+  String get packingAllTasksDone => 'כל המשימות הושלמו';
+  @override
+  String get packingDeselectAll => 'בטל בחירת הכל';
+  @override
+  String get packingMarkPacked => 'סמן כארוז';
+  @override
+  String get packingMarkUnpacked => 'סמן כלא ארוז';
+  @override
+  String get packingTemplateTitle => 'שם התבנית';
+  @override
+  String get packingTemplateDescription => 'תיאור';
+  @override
+  String get packingNoTemplates => 'אין תבניות שמורות עדיין';
+  @override
+  String get packingLoadTemplateTitle => 'טען תבנית';
+  @override
+  String get packingSaveTemplateTitle => 'שמור כתבנית';
+  @override
+  String get tasksTitle => 'משימות';
+  @override
+  String get tasksAddTask => 'הוסף משימה';
+  @override
+  String get tasksTaskName => 'שם משימה';
+  @override
+  String get tasksDueDate => 'תאריך יעד';
+  @override
+  String get tasksProgress => 'התקדמות משימות';
+  @override
+  String get tasksTabPending => 'ממתין';
+  @override
+  String get tasksTabInProgress => 'בביצוע';
+  @override
+  String get tasksTabDone => 'הושלם';
+  @override
+  String get tasksStatusPending => 'ממתין';
+  @override
+  String get tasksStatusInProgress => 'בביצוע';
+  @override
+  String get tasksStatusDone => 'הושלם';
+  @override
+  String get tasksOverdue => 'באיחור';
+  @override
+  String get tasksNoPending => 'אין משימות ממתינות';
+  @override
+  String get tasksNoInProgress => 'אין משימות בביצוע';
+  @override
+  String get tasksNoDone => 'אין משימות שהושלמו עדיין';
+  @override
+  String get tasksStart => 'התחל';
+  @override
+  String get tasksComplete => 'סיים';
+  @override
+  String get tasksMarkPending => 'סמן כממתין';
+  @override
+  String get tasksMarkInProgress => 'סמן כבביצוע';
+  @override
+  String get tasksMarkDone => 'סמן כהושלם';
+  @override
+  String get addressesTitle => 'כתובות';
+  @override
+  String get addressesAddAddress => 'הוסף כתובת';
+  @override
+  String get addressesMapButton => 'מפה';
+  @override
+  String get addressesNoAddresses => 'אין כתובות שמורות';
+  @override
+  String get addressesNoAddressesSubtitle => 'הוסף מלונות, מסעדות, אתרי תיירות ועוד.';
+  @override
+  String get addressesCatHotel => 'מלון';
+  @override
+  String get addressesCatAirport => 'שדה תעופה';
+  @override
+  String get addressesCatRestaurant => 'מסעדה';
+  @override
+  String get addressesCatLandmark => 'אתר תיירות';
+  @override
+  String get addressesCatOffice => 'משרד';
+  @override
+  String get addressesCatHospital => 'בית חולים';
+  @override
+  String get addressesCatTransport => 'תחבורה';
+  @override
+  String get addressesCatShopping => 'קניות';
+  @override
+  String get addressesCatOther => 'אחר';
+  @override
+  String get receiptsTitle => 'קבלות והוצאות';
+  @override
+  String get receiptsAddReceipt => 'הוסף קבלה';
+  @override
+  String get receiptsReceiptName => 'שם קבלה';
+  @override
+  String get receiptsTotalExpenses => 'סך הוצאות';
+  @override
+  String get receiptsNoReceipts => 'אין קבלות עדיין';
+  @override
+  String get receiptsNoReceiptsSubtitle => 'עקוב אחר ההוצאות שלך על ידי הוספת קבלות.';
+  @override
+  String get receiptsPhotoAttached => 'תמונה מצורפת';
+  @override
+  String get receiptsCatFood => 'אוכל ומשקאות';
+  @override
+  String get receiptsCatTransport => 'תחבורה';
+  @override
+  String get receiptsCatAccommodation => 'לינה';
+  @override
+  String get receiptsCatEntertainment => 'בידור';
+  @override
+  String get receiptsCatShopping => 'קניות';
+  @override
+  String get receiptsCatHealth => 'בריאות';
+  @override
+  String get receiptsCatCommunication => 'תקשורת';
+  @override
+  String get receiptsCatFees => 'עמלות וחיובים';
+  @override
+  String get receiptsCatOther => 'אחר';
+  @override
+  String get documentsTitle => 'מסמכים';
+  @override
+  String get documentsAddDocument => 'הוסף מסמך';
+  @override
+  String get documentsDocumentName => 'שם מסמך';
+  @override
+  String get documentsNoDocuments => 'אין מסמכים עדיין';
+  @override
+  String get documentsNoDocumentsSubtitle => 'הוסף כרטיסים, שוברים, מכתבים ומסמכים נוספים.';
+  @override
+  String get documentsNoFileAttached => 'אין קובץ מצורף';
+  @override
+  String get documentsFileAttached => 'קובץ מצורף';
+  @override
+  String get documentsTypeTicket => 'כרטיס';
+  @override
+  String get documentsTypeVoucher => 'שובר';
+  @override
+  String get documentsTypeLetter => 'מכתב';
+  @override
+  String get documentsTypePassport => 'דרכון';
+  @override
+  String get documentsTypeVisa => 'ויזה';
+  @override
+  String get documentsTypeInsurance => 'ביטוח';
+  @override
+  String get documentsTypeReservation => 'הזמנה';
+  @override
+  String get documentsTypeItinerary => 'מסלול';
+  @override
+  String get documentsTypeOther => 'אחר';
+  @override
+  String get archiveTitle => 'ארכיון';
+  @override
+  String get archiveNoTrips => 'אין נסיעות בארכיון';
+  @override
+  String get archiveNoTripsSubtitle => 'נסיעות שהועברו לארכיון יופיעו כאן לעיון.';
+  @override
+  String get archiveCloneTrip => 'שכפל לנסיעה חדשה';
+  @override
+  String get archiveCloneTitle => 'שכפול נסיעה';
+  @override
+  String get archiveCloneNewName => 'שם הנסיעה החדשה';
+  @override
+  String get archiveClonePacking => 'רשימת אריזה';
+  @override
+  String get archiveClonePackingSubtitle => 'כל הפריטים (מאופס ללא ארוז)';
+  @override
+  String get archiveCloneTasks => 'משימות';
+  @override
+  String get archiveCloneTasksSubtitle => 'כל המשימות (מאופס לממתין)';
+  @override
+  String get archiveCloneAddresses => 'כתובות';
+  @override
+  String get archiveCloneAddressesSubtitle => 'מלונות, מסעדות, אתרי תיירות';
+  @override
+  String get settingsTitle => 'הגדרות';
+  @override
+  String get settingsDataManagement => 'ניהול נתונים';
+  @override
+  String get settingsExportBackup => 'ייצא גיבוי';
+  @override
+  String get settingsExportBackupSubtitle => 'שמור עותק של כל נתוני הנסיעות שלך';
+  @override
+  String get settingsRestoreBackup => 'שחזר גיבוי';
+  @override
+  String get settingsRestoreBackupSubtitle => 'שחזר מקובץ גיבוי שיוצא קודם';
+  @override
+  String get settingsDangerZone => 'אזור מסוכן';
+  @override
+  String get settingsResetData => 'אפס נתוני אפליקציה';
+  @override
+  String get settingsResetDataSubtitle => 'מחק לצמיתות את כל הנסיעות, רשימות האריזה, המשימות וכל שאר הנתונים';
+  @override
+  String get settingsLanguage => 'שפה';
+  @override
+  String get settingsSelectLanguage => 'בחר שפה';
+  @override
+  String get settingsLanguageEditor => 'ערוך תרגומים';
+  @override
+  String get settingsLanguageEditorSubtitle => 'צפה והתאם אישית מחרוזות מתורגמות';
+  @override
+  String get settingsAbout => 'אודות';
+  @override
+  String get settingsAboutSubtitle => 'גרסה 1.1.0 · מתכנן נסיעות אישי';
+  @override
+  String get settingsRestoreConfirmTitle => 'שחזור גיבוי';
+  @override
+  String get settingsRestoreConfirmBody => 'פעולה זו תחליף את כל הנתונים הנוכחיים בקובץ הגיבוי. הנתונים הנוכחיים שלך יאבדו.\n\nהמשך?';
+  @override
+  String get settingsResetStep1Title => 'איפוס נתוני אפליקציה';
+  @override
+  String get settingsResetStep1Body => 'פעולה זו תמחק לצמיתות את הכל:\n\n• כל הנסיעות (פעילות, מתוכננות ובארכיון)\n• כל רשימות האריזה והתבניות\n• כל המשימות, הכתובות והמסמכים\n• כל הקבלות ורשומות ההוצאות\n\nלא ניתן לבטל פעולה זו.\n\nהאם אתה בטוח שברצונך להמשיך?';
+  @override
+  String get settingsResetStep2Title => 'אישור סופי';
+  @override
+  String get settingsResetStep2Body => 'לאישור, הקלד את המילה הבאה בדיוק כפי שמוצגת:';
+  @override
+  String get settingsResetKeyword => 'RESET';
+  @override
+  String get settingsResetButton => 'אפס הכל';
+  @override
+  String get settingsResetSuccess => 'נתוני האפליקציה אופסו. כל הרשומות נמחקו.';
+  @override
+  String get langEnglish => 'English';
+  @override
+  String get langHebrew => 'עברית';
+  @override
+  String get tripTypeLeisure => 'פנאי';
+  @override
+  String get tripTypeBusiness => 'עסקים';
+  @override
+  String get tripTypeFamily => 'משפחה';
+  @override
+  String get tripPurposeHoliday => 'חופשה';
+  @override
+  String get tripPurposeWorkTrip => 'נסיעת עבודה';
+  @override
+  String get tripPurposeFamilyVisit => 'ביקור משפחה';
+  @override
+  String get tripPurposeConference => 'כנס';
+  @override
+  String get packingCatClothing => 'ביגוד';
+  @override
+  String get packingCatToiletries => 'טיפוח';
+  @override
+  String get packingCatElectronics => 'אלקטרוניקה';
+  @override
+  String get packingCatDocuments => 'מסמכים';
+  @override
+  String get packingCatMedication => 'תרופות';
+  @override
+  String get packingCatFoodSnacks => 'אוכל וחטיפים';
+  @override
+  String get packingCatAccessories => 'אביזרים';
+  @override
+  String get packingCatSportOutdoor => 'ספורט וטבע';
+  @override
+  String get packingCatBabyKids => 'תינוק וילדים';
+  @override
+  String get packingCatWorkOffice => 'עבודה ומשרד';
+  @override
+  String get packingCatOther => 'אחר';
+  @override
+  String get storageCheckin => 'מזוודה לטעינה';
+  @override
+  String get storageHandLuggage => 'כבודת יד';
+  @override
+  String get storageBackpack => 'תיק גב';
+  @override
+  String get storageToiletryBag => 'תיק טיפוח';
+  @override
+  String get storageLaptopBag => 'תיק מחשב';
+  @override
+  String get storageHandbag => 'תיק יד';
+  @override
+  String get storageWallet => 'ארנק';
+  @override
+  String get storageMoneyBelt => 'חגורת כסף';
+  @override
+  String get storageCarBoot => 'תא מטען';
+  @override
+  String get storageShippingBox => 'קופסת משלוח';
+  @override
+  String get storageOther => 'אחר';
+  @override
+  String get packingItemNameHint => 'לדוגמה: דרכון, מטען, חולצה...';
+  @override
+  String get packingItemNameRequired => 'שם הפריט הוא שדה חובה';
+  @override
+  String get packingSelectCategory => 'בחר קטגוריה';
+  @override
+  String get packingStoragePlaceHint => 'היכן תאחסן פריט זה?';
+  @override
+  String get packingCustomStorageHint => 'לדוגמה: מזוודה 23 ק"ג, תיק מצלמה...';
+  @override
+  String get packingNotesHint => 'הערות על פריט זה...';
+  @override
+  String get packingItemTasksLabel => 'משימות פריט';
+  @override
+  String get packingItemTasksHint => 'לדוגמה: לקנות, לגהץ';
+  @override
+  String get packingAddTaskHint => 'הוסף משימה לפריט זה...';
+  @override
+  String get packingUpdateItem => 'עדכן פריט';
+  @override
+  String get packingErrorSaving => 'שגיאה בשמירת הפריט';
+  @override
+  String get templateSaveTitle => 'שמור כתבנית';
+  @override
+  String get templateNameLabel => 'שם התבנית';
+  @override
+  String get templateNameHint => 'לדוגמה: חופשת קיץ';
+  @override
+  String get templateDescLabel => 'תיאור (אופציונלי)';
+  @override
+  String get templateDescHint => 'לדוגמה: לנסיעות חוף של שבוע-שבועיים';
+  @override
+  String get templateSaveButton => 'שמור תבנית';
+  @override
+  String get templateErrorSaving => 'שגיאה בשמירת התבנית';
+  @override
+  String get templateLoadTitle => 'טען תבנית';
+  @override
+  String get templateNoTemplates => 'אין תבניות שמורות עדיין';
+  @override
+  String get templateNoTemplatesSubtitle => 'שמור תחילה רשימת אריזה כתבנית.';
+  @override
+  String get tripTypeAdventure => 'הרפתקה';
+  @override
+  String get tripTypeMedical => 'רפואי';
+  @override
+  String get tripTypeOther => 'אחר';
+  @override
+  String get tripPurposeMedical => 'מסיבות רפואיות';
+  @override
+  String get tripPurposeOther => 'אחר';
+  @override
+  String get packingUncategorised => 'ללא קטגוריה';
+  @override
+  String get packingExcelHeaderName => 'שם';
+  @override
+  String get packingExcelHeaderCategory => 'קטגוריה';
+  @override
+  String get packingExcelHeaderQuantity => 'כמות';
+  @override
+  String get packingExcelHeaderStorage => 'מקום אחסון';
+  @override
+  String get packingExcelHeaderStatus => 'סטטוס';
+  @override
+  String get packingExcelHeaderNotes => 'הערות';
+  @override
+  String get tripDetailTypeBadge => 'סוג';
+  @override
+  String get validatorRequired => 'שדה חובה';
+  @override
+  String get backupRestoredSuccess => 'הגיבוי שוחזר בהצלחה. הפעל מחדש את האפליקציה.';
+  @override
+  String get backupRestoreFailed => 'השחזור נכשל או בוטל. הנתונים שלך לא השתנו.';
+  @override
+  String get resetConfirmMismatch => 'חייב להתאים בדיוק';
+  @override
+  String get settingsContinue => 'המשך';
+  @override
+  String get settingsBackupFailed => 'הגיבוי נכשל. לא נמצאו נתונים.';
+  @override
+  String get imageLoadError => 'לא ניתן לטעון את התמונה';
+  @override
+  String fieldExchangeRate(String currency) => 'שער חליפין ל' + currency.toString() + '';
+  @override
+  String dashboardDaysUntil(int days) => days.toString() + ' ימים עד היציאה';
+  @override
+  String tripsDays(int count) => count.toString() + ' ימים';
+  @override
+  String tripDetailDaysUntil(int days) => days.toString() + ' ימים עד היציאה';
+  @override
+  String packingPackedCount(int packed, int total) => packed.toString() + ' / ' + total.toString() + ' ארוז';
+  @override
+  String packingTasksPending(int count) => count.toString() + ' משימות ממתינות';
+  @override
+  String packingSelectAll(int count) => 'בחר הכל (' + count.toString() + ')';
+  @override
+  String tasksDoneCount(int done, int total) => done.toString() + ' / ' + total.toString() + ' הושלמו';
+  @override
+  String templateSaveSubtitle(int count) => 'זה ישמור ' + count.toString() + ' פריטים כתבנית לשימוש חוזר.';
+  @override
+  String templateItemCount(int count) => count.toString() + ' פריטים';
+  @override
+  String packingSelectedCount(int count) => count.toString() + ' נבחרו';
+}

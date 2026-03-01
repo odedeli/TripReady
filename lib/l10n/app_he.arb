@@ -1,0 +1,366 @@
+{
+  "@@locale": "he",
+  "appTitle": "TripReady",
+  "navDashboard": "לוח בקרה",
+  "navMyTrips": "הנסיעות שלי",
+  "navArchive": "ארכיון",
+  "navSettings": "הגדרות",
+  "actionSave": "שמור",
+  "actionCancel": "ביטול",
+  "actionDelete": "מחק",
+  "actionEdit": "ערוך",
+  "actionAdd": "הוסף",
+  "actionClose": "סגור",
+  "actionConfirm": "אישור",
+  "actionBack": "חזרה",
+  "actionYes": "כן",
+  "actionNo": "לא",
+  "actionUpdate": "עדכן",
+  "actionApply": "החל",
+  "actionClear": "נקה סינון",
+  "fieldNotes": "הערות",
+  "fieldName": "שם",
+  "fieldCategory": "קטגוריה",
+  "fieldDate": "תאריך",
+  "fieldPhone": "טלפון",
+  "fieldWebsite": "אתר אינטרנט",
+  "fieldAddress": "כתובת",
+  "fieldStatus": "סטטוס",
+  "fieldQuantity": "כמות",
+  "fieldStoragePlace": "מקום אחסון",
+  "fieldCurrency": "מטבע",
+  "fieldAmount": "סכום",
+  "fieldExchangeRate": "שער חליפין ל{currency}",
+  "@fieldExchangeRate": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardTitle": "לוח בקרה",
+  "dashboardActiveTrip": "נסיעה פעילה",
+  "dashboardNoActiveTrip": "אין נסיעה פעילה",
+  "dashboardStartPlanning": "התחל לתכנן את הנסיעה הבאה שלך",
+  "dashboardPackingProgress": "התקדמות אריזה",
+  "dashboardTaskProgress": "התקדמות משימות",
+  "dashboardDaysUntil": "{days} ימים עד היציאה",
+  "@dashboardDaysUntil": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardDepartingToday": "🛫 יוצאים היום!",
+  "dashboardDepartingTomorrow": "🗓 יוצאים מחר!",
+  "dashboardPacked": "ארוז",
+  "dashboardTasksDone": "משימות שבוצעו",
+  "dashboardExpenses": "הוצאות",
+  "dashboardSpent": "הוצאתי",
+  "tripsTitle": "הנסיעות שלי",
+  "tripsNewTrip": "נסיעה חדשה",
+  "tripsAddTrip": "הוסף נסיעה",
+  "tripsEditTrip": "ערוך נסיעה",
+  "tripsDeleteTrip": "מחק נסיעה",
+  "tripsArchiveTrip": "העבר לארכיון",
+  "tripsSetActive": "הגדר כפעילה",
+  "tripsTripName": "שם הנסיעה",
+  "tripsDestination": "יעד",
+  "tripsCountry": "מדינה",
+  "tripsTripType": "סוג הנסיעה",
+  "tripsTripPurpose": "מטרת הנסיעה",
+  "tripsDeparture": "יציאה",
+  "tripsReturn": "חזרה",
+  "tripsDuration": "משך",
+  "tripsDays": "{count} ימים",
+  "@tripsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tripsNoTrips": "אין נסיעות עדיין",
+  "tripsNoTripsSubtitle": "לחץ על הכפתור למטה להוספת הנסיעה הראשונה.",
+  "tripsTabActive": "פעיל",
+  "tripsTabPlanned": "מתוכנן",
+  "tripsTabArchived": "בארכיון",
+  "tripsStatusActive": "פעילה",
+  "tripsStatusPlanned": "מתוכננת",
+  "tripsStatusArchived": "בארכיון",
+  "tripDetailTitle": "פרטי נסיעה",
+  "tripDetailOverview": "סקירה כללית",
+  "tripDetailSections": "חלקי הנסיעה",
+  "tripDetailDaysUntil": "{days} ימים עד היציאה",
+  "@tripDetailDaysUntil": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "tripDetailDepartingToday": "🛫 יוצאים היום!",
+  "tripDetailDepartingTomorrow": "🗓 יוצאים מחר!",
+  "packingTitle": "רשימת אריזה",
+  "packingAddItem": "הוסף פריט",
+  "packingEditItem": "ערוך פריט",
+  "packingItemName": "שם פריט",
+  "packingProgress": "התקדמות אריזה",
+  "packingPackedCount": "{packed} / {total} ארוז",
+  "@packingPackedCount": {
+    "placeholders": {
+      "packed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "packingStatusPacked": "ארוז",
+  "packingStatusNotPacked": "לא ארוז",
+  "packingSaveTemplate": "שמור כתבנית",
+  "packingLoadTemplate": "טען תבנית",
+  "packingExportExcel": "ייצא לאקסל",
+  "packingImportExcel": "ייבא מאקסל",
+  "packingUncheckAll": "בטל סימון לכל הפריטים",
+  "packingDeleteAll": "מחק את כל הפריטים",
+  "packingNoItems": "אין פריטים עדיין",
+  "packingNoItemsSubtitle": "הוסף פריטים ידנית, טען תבנית, או ייבא מאקסל.",
+  "packingItemTasks": "משימות פריט",
+  "packingAllTasksDone": "כל המשימות הושלמו",
+  "packingTasksPending": "{count} משימות ממתינות",
+  "@packingTasksPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packingSelectAll": "בחר הכל ({count})",
+  "@packingSelectAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packingDeselectAll": "בטל בחירת הכל",
+  "packingMarkPacked": "סמן כארוז",
+  "packingMarkUnpacked": "סמן כלא ארוז",
+  "packingTemplateTitle": "שם התבנית",
+  "packingTemplateDescription": "תיאור",
+  "packingNoTemplates": "אין תבניות שמורות עדיין",
+  "packingLoadTemplateTitle": "טען תבנית",
+  "packingSaveTemplateTitle": "שמור כתבנית",
+  "tasksTitle": "משימות",
+  "tasksAddTask": "הוסף משימה",
+  "tasksTaskName": "שם משימה",
+  "tasksDueDate": "תאריך יעד",
+  "tasksProgress": "התקדמות משימות",
+  "tasksTabPending": "ממתין",
+  "tasksTabInProgress": "בביצוע",
+  "tasksTabDone": "הושלם",
+  "tasksStatusPending": "ממתין",
+  "tasksStatusInProgress": "בביצוע",
+  "tasksStatusDone": "הושלם",
+  "tasksOverdue": "באיחור",
+  "tasksNoPending": "אין משימות ממתינות",
+  "tasksNoInProgress": "אין משימות בביצוע",
+  "tasksNoDone": "אין משימות שהושלמו עדיין",
+  "tasksDoneCount": "{done} / {total} הושלמו",
+  "@tasksDoneCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tasksStart": "התחל",
+  "tasksComplete": "סיים",
+  "tasksMarkPending": "סמן כממתין",
+  "tasksMarkInProgress": "סמן כבביצוע",
+  "tasksMarkDone": "סמן כהושלם",
+  "addressesTitle": "כתובות",
+  "addressesAddAddress": "הוסף כתובת",
+  "addressesMapButton": "מפה",
+  "addressesNoAddresses": "אין כתובות שמורות",
+  "addressesNoAddressesSubtitle": "הוסף מלונות, מסעדות, אתרי תיירות ועוד.",
+  "addressesCatHotel": "מלון",
+  "addressesCatAirport": "שדה תעופה",
+  "addressesCatRestaurant": "מסעדה",
+  "addressesCatLandmark": "אתר תיירות",
+  "addressesCatOffice": "משרד",
+  "addressesCatHospital": "בית חולים",
+  "addressesCatTransport": "תחבורה",
+  "addressesCatShopping": "קניות",
+  "addressesCatOther": "אחר",
+  "receiptsTitle": "קבלות והוצאות",
+  "receiptsAddReceipt": "הוסף קבלה",
+  "receiptsReceiptName": "שם קבלה",
+  "receiptsTotalExpenses": "סך הוצאות",
+  "receiptsNoReceipts": "אין קבלות עדיין",
+  "receiptsNoReceiptsSubtitle": "עקוב אחר ההוצאות שלך על ידי הוספת קבלות.",
+  "receiptsPhotoAttached": "תמונה מצורפת",
+  "receiptsCatFood": "אוכל ומשקאות",
+  "receiptsCatTransport": "תחבורה",
+  "receiptsCatAccommodation": "לינה",
+  "receiptsCatEntertainment": "בידור",
+  "receiptsCatShopping": "קניות",
+  "receiptsCatHealth": "בריאות",
+  "receiptsCatCommunication": "תקשורת",
+  "receiptsCatFees": "עמלות וחיובים",
+  "receiptsCatOther": "אחר",
+  "documentsTitle": "מסמכים",
+  "documentsAddDocument": "הוסף מסמך",
+  "documentsDocumentName": "שם מסמך",
+  "documentsNoDocuments": "אין מסמכים עדיין",
+  "documentsNoDocumentsSubtitle": "הוסף כרטיסים, שוברים, מכתבים ומסמכים נוספים.",
+  "documentsNoFileAttached": "אין קובץ מצורף",
+  "documentsFileAttached": "קובץ מצורף",
+  "documentsTypeTicket": "כרטיס",
+  "documentsTypeVoucher": "שובר",
+  "documentsTypeLetter": "מכתב",
+  "documentsTypePassport": "דרכון",
+  "documentsTypeVisa": "ויזה",
+  "documentsTypeInsurance": "ביטוח",
+  "documentsTypeReservation": "הזמנה",
+  "documentsTypeItinerary": "מסלול",
+  "documentsTypeOther": "אחר",
+  "archiveTitle": "ארכיון",
+  "archiveNoTrips": "אין נסיעות בארכיון",
+  "archiveNoTripsSubtitle": "נסיעות שהועברו לארכיון יופיעו כאן לעיון.",
+  "archiveCloneTrip": "שכפל לנסיעה חדשה",
+  "archiveCloneTitle": "שכפול נסיעה",
+  "archiveCloneNewName": "שם הנסיעה החדשה",
+  "archiveClonePacking": "רשימת אריזה",
+  "archiveClonePackingSubtitle": "כל הפריטים (מאופס ללא ארוז)",
+  "archiveCloneTasks": "משימות",
+  "archiveCloneTasksSubtitle": "כל המשימות (מאופס לממתין)",
+  "archiveCloneAddresses": "כתובות",
+  "archiveCloneAddressesSubtitle": "מלונות, מסעדות, אתרי תיירות",
+  "settingsTitle": "הגדרות",
+  "settingsDataManagement": "ניהול נתונים",
+  "settingsExportBackup": "ייצא גיבוי",
+  "settingsExportBackupSubtitle": "שמור עותק של כל נתוני הנסיעות שלך",
+  "settingsRestoreBackup": "שחזר גיבוי",
+  "settingsRestoreBackupSubtitle": "שחזר מקובץ גיבוי שיוצא קודם",
+  "settingsDangerZone": "אזור מסוכן",
+  "settingsResetData": "אפס נתוני אפליקציה",
+  "settingsResetDataSubtitle": "מחק לצמיתות את כל הנסיעות, רשימות האריזה, המשימות וכל שאר הנתונים",
+  "settingsLanguage": "שפה",
+  "settingsSelectLanguage": "בחר שפה",
+  "settingsLanguageEditor": "ערוך תרגומים",
+  "settingsLanguageEditorSubtitle": "צפה והתאם אישית מחרוזות מתורגמות",
+  "settingsAbout": "אודות",
+  "settingsAboutSubtitle": "גרסה 1.1.0 · מתכנן נסיעות אישי",
+  "settingsRestoreConfirmTitle": "שחזור גיבוי",
+  "settingsRestoreConfirmBody": "פעולה זו תחליף את כל הנתונים הנוכחיים בקובץ הגיבוי. הנתונים הנוכחיים שלך יאבדו.\n\nהמשך?",
+  "settingsResetStep1Title": "איפוס נתוני אפליקציה",
+  "settingsResetStep1Body": "פעולה זו תמחק לצמיתות את הכל:\n\n• כל הנסיעות (פעילות, מתוכננות ובארכיון)\n• כל רשימות האריזה והתבניות\n• כל המשימות, הכתובות והמסמכים\n• כל הקבלות ורשומות ההוצאות\n\nלא ניתן לבטל פעולה זו.\n\nהאם אתה בטוח שברצונך להמשיך?",
+  "settingsResetStep2Title": "אישור סופי",
+  "settingsResetStep2Body": "לאישור, הקלד את המילה הבאה בדיוק כפי שמוצגת:",
+  "settingsResetKeyword": "RESET",
+  "settingsResetButton": "אפס הכל",
+  "settingsResetSuccess": "נתוני האפליקציה אופסו. כל הרשומות נמחקו.",
+  "langEnglish": "English",
+  "langHebrew": "עברית",
+  "tripTypeLeisure": "פנאי",
+  "tripTypeBusiness": "עסקים",
+  "tripTypeFamily": "משפחה",
+  "tripPurposeHoliday": "חופשה",
+  "tripPurposeWorkTrip": "נסיעת עבודה",
+  "tripPurposeFamilyVisit": "ביקור משפחה",
+  "tripPurposeConference": "כנס",
+  "packingCatClothing": "ביגוד",
+  "packingCatToiletries": "טיפוח",
+  "packingCatElectronics": "אלקטרוניקה",
+  "packingCatDocuments": "מסמכים",
+  "packingCatMedication": "תרופות",
+  "packingCatFoodSnacks": "אוכל וחטיפים",
+  "packingCatAccessories": "אביזרים",
+  "packingCatSportOutdoor": "ספורט וטבע",
+  "packingCatBabyKids": "תינוק וילדים",
+  "packingCatWorkOffice": "עבודה ומשרד",
+  "packingCatOther": "אחר",
+  "storageCheckin": "מזוודה לטעינה",
+  "storageHandLuggage": "כבודת יד",
+  "storageBackpack": "תיק גב",
+  "storageToiletryBag": "תיק טיפוח",
+  "storageLaptopBag": "תיק מחשב",
+  "storageHandbag": "תיק יד",
+  "storageWallet": "ארנק",
+  "storageMoneyBelt": "חגורת כסף",
+  "storageCarBoot": "תא מטען",
+  "storageShippingBox": "קופסת משלוח",
+  "storageOther": "אחר",
+  "packingItemNameHint": "לדוגמה: דרכון, מטען, חולצה...",
+  "packingItemNameRequired": "שם הפריט הוא שדה חובה",
+  "packingSelectCategory": "בחר קטגוריה",
+  "packingStoragePlaceHint": "היכן תאחסן פריט זה?",
+  "packingCustomStorageHint": "לדוגמה: מזוודה 23 ק\"ג, תיק מצלמה...",
+  "packingNotesHint": "הערות על פריט זה...",
+  "packingItemTasksLabel": "משימות פריט",
+  "packingItemTasksHint": "לדוגמה: לקנות, לגהץ",
+  "packingAddTaskHint": "הוסף משימה לפריט זה...",
+  "packingUpdateItem": "עדכן פריט",
+  "packingErrorSaving": "שגיאה בשמירת הפריט",
+  "templateSaveTitle": "שמור כתבנית",
+  "templateSaveSubtitle": "זה ישמור {count} פריטים כתבנית לשימוש חוזר.",
+  "@templateSaveSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "templateNameLabel": "שם התבנית",
+  "templateNameHint": "לדוגמה: חופשת קיץ",
+  "templateDescLabel": "תיאור (אופציונלי)",
+  "templateDescHint": "לדוגמה: לנסיעות חוף של שבוע-שבועיים",
+  "templateSaveButton": "שמור תבנית",
+  "templateErrorSaving": "שגיאה בשמירת התבנית",
+  "templateLoadTitle": "טען תבנית",
+  "templateNoTemplates": "אין תבניות שמורות עדיין",
+  "templateNoTemplatesSubtitle": "שמור תחילה רשימת אריזה כתבנית.",
+  "templateItemCount": "{count} פריטים",
+  "@templateItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packingSelectedCount": "{count} נבחרו",
+  "@packingSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tripTypeAdventure": "הרפתקה",
+  "tripTypeMedical": "רפואי",
+  "tripTypeOther": "אחר",
+  "tripPurposeMedical": "מסיבות רפואיות",
+  "tripPurposeOther": "אחר",
+  "packingUncategorised": "ללא קטגוריה",
+  "packingExcelHeaderName": "שם",
+  "packingExcelHeaderCategory": "קטגוריה",
+  "packingExcelHeaderQuantity": "כמות",
+  "packingExcelHeaderStorage": "מקום אחסון",
+  "packingExcelHeaderStatus": "סטטוס",
+  "packingExcelHeaderNotes": "הערות",
+  "tripDetailTypeBadge": "סוג",
+  "validatorRequired": "שדה חובה",
+  "backupRestoredSuccess": "הגיבוי שוחזר בהצלחה. הפעל מחדש את האפליקציה.",
+  "backupRestoreFailed": "השחזור נכשל או בוטל. הנתונים שלך לא השתנו.",
+  "resetConfirmMismatch": "חייב להתאים בדיוק",
+  "settingsContinue": "המשך",
+  "settingsBackupFailed": "הגיבוי נכשל. לא נמצאו נתונים.",
+  "imageLoadError": "לא ניתן לטעון את התמונה"
+}

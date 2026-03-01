@@ -1,0 +1,366 @@
+{
+  "@@locale": "en",
+  "appTitle": "TripReady",
+  "navDashboard": "Dashboard",
+  "navMyTrips": "My Trips",
+  "navArchive": "Archive",
+  "navSettings": "Settings",
+  "actionSave": "Save",
+  "actionCancel": "Cancel",
+  "actionDelete": "Delete",
+  "actionEdit": "Edit",
+  "actionAdd": "Add",
+  "actionClose": "Close",
+  "actionConfirm": "Confirm",
+  "actionBack": "Back",
+  "actionYes": "Yes",
+  "actionNo": "No",
+  "actionUpdate": "Update",
+  "actionApply": "Apply",
+  "actionClear": "Clear Filters",
+  "fieldNotes": "Notes",
+  "fieldName": "Name",
+  "fieldCategory": "Category",
+  "fieldDate": "Date",
+  "fieldPhone": "Phone",
+  "fieldWebsite": "Website",
+  "fieldAddress": "Address",
+  "fieldStatus": "Status",
+  "fieldQuantity": "Quantity",
+  "fieldStoragePlace": "Storage Place",
+  "fieldCurrency": "Currency",
+  "fieldAmount": "Amount",
+  "fieldExchangeRate": "Exchange Rate to {currency}",
+  "@fieldExchangeRate": {
+    "placeholders": {
+      "currency": {
+        "type": "String"
+      }
+    }
+  },
+  "dashboardTitle": "Dashboard",
+  "dashboardActiveTrip": "Active Trip",
+  "dashboardNoActiveTrip": "No active trip",
+  "dashboardStartPlanning": "Start planning your next trip",
+  "dashboardPackingProgress": "Packing Progress",
+  "dashboardTaskProgress": "Task Progress",
+  "dashboardDaysUntil": "{days} days until departure",
+  "@dashboardDaysUntil": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardDepartingToday": "🛫 Departing today!",
+  "dashboardDepartingTomorrow": "🗓 Departing tomorrow!",
+  "dashboardPacked": "Packed",
+  "dashboardTasksDone": "Tasks Done",
+  "dashboardExpenses": "Expenses",
+  "dashboardSpent": "Spent",
+  "tripsTitle": "My Trips",
+  "tripsNewTrip": "New Trip",
+  "tripsAddTrip": "Add Trip",
+  "tripsEditTrip": "Edit Trip",
+  "tripsDeleteTrip": "Delete Trip",
+  "tripsArchiveTrip": "Archive Trip",
+  "tripsSetActive": "Set as Active",
+  "tripsTripName": "Trip Name",
+  "tripsDestination": "Destination",
+  "tripsCountry": "Country",
+  "tripsTripType": "Trip Type",
+  "tripsTripPurpose": "Trip Purpose",
+  "tripsDeparture": "Departure",
+  "tripsReturn": "Return",
+  "tripsDuration": "Duration",
+  "tripsDays": "{count} days",
+  "@tripsDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tripsNoTrips": "No trips yet",
+  "tripsNoTripsSubtitle": "Tap the button below to add your first trip.",
+  "tripsTabActive": "Active",
+  "tripsTabPlanned": "Planned",
+  "tripsTabArchived": "Archived",
+  "tripsStatusActive": "Active",
+  "tripsStatusPlanned": "Planned",
+  "tripsStatusArchived": "Archived",
+  "tripDetailTitle": "Trip Detail",
+  "tripDetailOverview": "Overview",
+  "tripDetailSections": "Trip Sections",
+  "tripDetailDaysUntil": "{days} days until departure",
+  "@tripDetailDaysUntil": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "tripDetailDepartingToday": "🛫 Departing today!",
+  "tripDetailDepartingTomorrow": "🗓 Departing tomorrow!",
+  "packingTitle": "Packing List",
+  "packingAddItem": "Add Item",
+  "packingEditItem": "Edit Item",
+  "packingItemName": "Item Name",
+  "packingProgress": "Packing Progress",
+  "packingPackedCount": "{packed} / {total} packed",
+  "@packingPackedCount": {
+    "placeholders": {
+      "packed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "packingStatusPacked": "Packed",
+  "packingStatusNotPacked": "Not Packed",
+  "packingSaveTemplate": "Save as Template",
+  "packingLoadTemplate": "Load Template",
+  "packingExportExcel": "Export as Excel",
+  "packingImportExcel": "Import from Excel",
+  "packingUncheckAll": "Uncheck All Items",
+  "packingDeleteAll": "Delete All Items",
+  "packingNoItems": "No items yet",
+  "packingNoItemsSubtitle": "Add items manually, load a template, or import from Excel.",
+  "packingItemTasks": "Item Tasks",
+  "packingAllTasksDone": "All tasks done",
+  "packingTasksPending": "{count} task(s) pending",
+  "@packingTasksPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packingSelectAll": "Select all ({count})",
+  "@packingSelectAll": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packingDeselectAll": "Deselect all",
+  "packingMarkPacked": "Mark as Packed",
+  "packingMarkUnpacked": "Mark as Not Packed",
+  "packingTemplateTitle": "Template Name",
+  "packingTemplateDescription": "Description",
+  "packingNoTemplates": "No templates saved yet",
+  "packingLoadTemplateTitle": "Load Template",
+  "packingSaveTemplateTitle": "Save as Template",
+  "tasksTitle": "Tasks",
+  "tasksAddTask": "Add Task",
+  "tasksTaskName": "Task Name",
+  "tasksDueDate": "Due Date",
+  "tasksProgress": "Task Progress",
+  "tasksTabPending": "Pending",
+  "tasksTabInProgress": "In Progress",
+  "tasksTabDone": "Done",
+  "tasksStatusPending": "Pending",
+  "tasksStatusInProgress": "In Progress",
+  "tasksStatusDone": "Done",
+  "tasksOverdue": "OVERDUE",
+  "tasksNoPending": "No pending tasks",
+  "tasksNoInProgress": "No tasks in progress",
+  "tasksNoDone": "No completed tasks yet",
+  "tasksDoneCount": "{done} / {total} completed",
+  "@tasksDoneCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "tasksStart": "Start",
+  "tasksComplete": "Complete",
+  "tasksMarkPending": "Mark as Pending",
+  "tasksMarkInProgress": "Mark as In Progress",
+  "tasksMarkDone": "Mark as Done",
+  "addressesTitle": "Addresses",
+  "addressesAddAddress": "Add Address",
+  "addressesMapButton": "Map",
+  "addressesNoAddresses": "No addresses saved",
+  "addressesNoAddressesSubtitle": "Add hotels, restaurants, landmarks and more.",
+  "addressesCatHotel": "Hotel",
+  "addressesCatAirport": "Airport",
+  "addressesCatRestaurant": "Restaurant",
+  "addressesCatLandmark": "Landmark",
+  "addressesCatOffice": "Office",
+  "addressesCatHospital": "Hospital",
+  "addressesCatTransport": "Transport",
+  "addressesCatShopping": "Shopping",
+  "addressesCatOther": "Other",
+  "receiptsTitle": "Receipts & Expenses",
+  "receiptsAddReceipt": "Add Receipt",
+  "receiptsReceiptName": "Receipt Name",
+  "receiptsTotalExpenses": "Total Expenses",
+  "receiptsNoReceipts": "No receipts yet",
+  "receiptsNoReceiptsSubtitle": "Track your expenses by adding receipts.",
+  "receiptsPhotoAttached": "Photo attached",
+  "receiptsCatFood": "Food & Drink",
+  "receiptsCatTransport": "Transport",
+  "receiptsCatAccommodation": "Accommodation",
+  "receiptsCatEntertainment": "Entertainment",
+  "receiptsCatShopping": "Shopping",
+  "receiptsCatHealth": "Health",
+  "receiptsCatCommunication": "Communication",
+  "receiptsCatFees": "Fees & Charges",
+  "receiptsCatOther": "Other",
+  "documentsTitle": "Documents",
+  "documentsAddDocument": "Add Document",
+  "documentsDocumentName": "Document Name",
+  "documentsNoDocuments": "No documents yet",
+  "documentsNoDocumentsSubtitle": "Add tickets, vouchers, letters and other documents.",
+  "documentsNoFileAttached": "No file attached",
+  "documentsFileAttached": "File attached",
+  "documentsTypeTicket": "Ticket",
+  "documentsTypeVoucher": "Voucher",
+  "documentsTypeLetter": "Letter",
+  "documentsTypePassport": "Passport",
+  "documentsTypeVisa": "Visa",
+  "documentsTypeInsurance": "Insurance",
+  "documentsTypeReservation": "Reservation",
+  "documentsTypeItinerary": "Itinerary",
+  "documentsTypeOther": "Other",
+  "archiveTitle": "Archive",
+  "archiveNoTrips": "No archived trips",
+  "archiveNoTripsSubtitle": "Trips you archive will appear here for reference.",
+  "archiveCloneTrip": "Clone to New Trip",
+  "archiveCloneTitle": "Clone Trip",
+  "archiveCloneNewName": "New Trip Name",
+  "archiveClonePacking": "Packing List",
+  "archiveClonePackingSubtitle": "All items (reset to unpacked)",
+  "archiveCloneTasks": "Tasks",
+  "archiveCloneTasksSubtitle": "All tasks (reset to pending)",
+  "archiveCloneAddresses": "Addresses",
+  "archiveCloneAddressesSubtitle": "Hotels, restaurants, landmarks",
+  "settingsTitle": "Settings",
+  "settingsDataManagement": "Data Management",
+  "settingsExportBackup": "Export Backup",
+  "settingsExportBackupSubtitle": "Save a copy of all your trip data",
+  "settingsRestoreBackup": "Restore Backup",
+  "settingsRestoreBackupSubtitle": "Restore from a previously exported backup file",
+  "settingsDangerZone": "Danger Zone",
+  "settingsResetData": "Reset App Data",
+  "settingsResetDataSubtitle": "Permanently delete all trips, packing lists, tasks and all other data",
+  "settingsLanguage": "Language",
+  "settingsSelectLanguage": "Select Language",
+  "settingsLanguageEditor": "Edit Translations",
+  "settingsLanguageEditorSubtitle": "View and customise translated strings",
+  "settingsAbout": "About",
+  "settingsAboutSubtitle": "Version 1.1.0 · Personal travel planner",
+  "settingsRestoreConfirmTitle": "Restore Backup",
+  "settingsRestoreConfirmBody": "This will replace ALL current data with the backup file. Your current data will be lost.\n\nContinue?",
+  "settingsResetStep1Title": "Reset App Data",
+  "settingsResetStep1Body": "This will permanently delete EVERYTHING:\n\n• All trips (active, planned and archived)\n• All packing lists and templates\n• All tasks, addresses and documents\n• All receipts and expense records\n\nThis action CANNOT be undone.\n\nAre you sure you want to continue?",
+  "settingsResetStep2Title": "Final Confirmation",
+  "settingsResetStep2Body": "To confirm, type the word below exactly as shown:",
+  "settingsResetKeyword": "RESET",
+  "settingsResetButton": "Reset Everything",
+  "settingsResetSuccess": "App data has been reset. All records deleted.",
+  "langEnglish": "English",
+  "langHebrew": "עברית",
+  "tripTypeLeisure": "Leisure",
+  "tripTypeBusiness": "Business",
+  "tripTypeFamily": "Family",
+  "tripPurposeHoliday": "Holiday",
+  "tripPurposeWorkTrip": "Work Trip",
+  "tripPurposeFamilyVisit": "Family Visit",
+  "tripPurposeConference": "Conference",
+  "packingCatClothing": "Clothing",
+  "packingCatToiletries": "Toiletries",
+  "packingCatElectronics": "Electronics",
+  "packingCatDocuments": "Documents",
+  "packingCatMedication": "Medication",
+  "packingCatFoodSnacks": "Food & Snacks",
+  "packingCatAccessories": "Accessories",
+  "packingCatSportOutdoor": "Sport & Outdoor",
+  "packingCatBabyKids": "Baby & Kids",
+  "packingCatWorkOffice": "Work & Office",
+  "packingCatOther": "Other",
+  "storageCheckin": "Check-in Luggage",
+  "storageHandLuggage": "Hand Luggage",
+  "storageBackpack": "Backpack",
+  "storageToiletryBag": "Toiletry Bag",
+  "storageLaptopBag": "Laptop Bag",
+  "storageHandbag": "Handbag / Purse",
+  "storageWallet": "Wallet",
+  "storageMoneyBelt": "Money Belt",
+  "storageCarBoot": "Car Boot",
+  "storageShippingBox": "Shipping Box",
+  "storageOther": "Other",
+  "packingItemNameHint": "e.g. Passport, Charger, T-shirt...",
+  "packingItemNameRequired": "Item name is required",
+  "packingSelectCategory": "Select a category",
+  "packingStoragePlaceHint": "Where will you store this?",
+  "packingCustomStorageHint": "e.g. Luggage 23 kg, Camera Bag...",
+  "packingNotesHint": "Any notes about this item...",
+  "packingItemTasksLabel": "Item Tasks",
+  "packingItemTasksHint": "e.g. to buy, to iron",
+  "packingAddTaskHint": "Add a task for this item...",
+  "packingUpdateItem": "Update Item",
+  "packingErrorSaving": "Error saving item",
+  "templateSaveTitle": "Save as Template",
+  "templateSaveSubtitle": "This will save {count} item(s) as a reusable template.",
+  "@templateSaveSubtitle": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "templateNameLabel": "Template Name",
+  "templateNameHint": "e.g. Summer Holiday Packing",
+  "templateDescLabel": "Description (optional)",
+  "templateDescHint": "e.g. For 1-2 week beach trips",
+  "templateSaveButton": "Save Template",
+  "templateErrorSaving": "Error saving template",
+  "templateLoadTitle": "Load Template",
+  "templateNoTemplates": "No templates saved yet",
+  "templateNoTemplatesSubtitle": "Save a packing list as a template first.",
+  "templateItemCount": "{count} items",
+  "@templateItemCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packingSelectedCount": "{count} selected",
+  "@packingSelectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "tripTypeAdventure": "Adventure",
+  "tripTypeMedical": "Medical",
+  "tripTypeOther": "Other",
+  "tripPurposeMedical": "Medical",
+  "tripPurposeOther": "Other",
+  "packingUncategorised": "Uncategorised",
+  "packingExcelHeaderName": "Name",
+  "packingExcelHeaderCategory": "Category",
+  "packingExcelHeaderQuantity": "Quantity",
+  "packingExcelHeaderStorage": "Storage Place",
+  "packingExcelHeaderStatus": "Status",
+  "packingExcelHeaderNotes": "Notes",
+  "tripDetailTypeBadge": "Type",
+  "validatorRequired": "Required",
+  "backupRestoredSuccess": "Backup restored successfully. Restart the app to see changes.",
+  "backupRestoreFailed": "Restore failed or cancelled. Your data is unchanged.",
+  "resetConfirmMismatch": "Must match exactly",
+  "settingsContinue": "Continue",
+  "settingsBackupFailed": "Backup failed. No data found.",
+  "imageLoadError": "Could not load image"
+}

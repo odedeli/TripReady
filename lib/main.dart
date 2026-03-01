@@ -6,18 +6,40 @@ import 'screens/dashboard_screen.dart';
 import 'screens/trips_screen.dart';
 import 'screens/archive/archive_screen.dart';
 import 'screens/settings_screen.dart';
+import 'services/language_service.dart';
+import 'package:tripready/l10n/app_localizations.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
+  await LanguageService.instance.load();
   runApp(const TripReadyApp());
 }
 
-class TripReadyApp extends StatelessWidget {
+class TripReadyApp extends StatefulWidget {
   const TripReadyApp({super.key});
+
+  @override
+  State<TripReadyApp> createState() => _TripReadyAppState();
+}
+
+class _TripReadyAppState extends State<TripReadyApp> {
+  @override
+  void initState() {
+    super.initState();
+    LanguageService.instance.addListener(_onLocaleChange);
+  }
+
+  @override
+  void dispose() {
+    LanguageService.instance.removeListener(_onLocaleChange);
+    super.dispose();
+  }
+
+  void _onLocaleChange() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +47,9 @@ class TripReadyApp extends StatelessWidget {
       title: 'TripReady',
       debugShowCheckedModeBanner: false,
       theme: TripReadyTheme.theme,
+      locale: LanguageService.instance.locale,
+      supportedLocales: LanguageService.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
       initialRoute: '/',
       routes: {
         '/': (_) => const MainShell(),
@@ -68,31 +93,35 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => tabNotifier.value = i,
-        destinations: const [
+        onDestinationSelected: (i) => setState(() {
+          _currentIndex = i;
+          tabNotifier.value = i;
+        }),
+        destinations: [
           NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard),
-            label: 'Dashboard',
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: const Icon(Icons.dashboard),
+            label: l.navDashboard,
           ),
           NavigationDestination(
-            icon: Icon(Icons.flight_outlined),
-            selectedIcon: Icon(Icons.flight),
-            label: 'My Trips',
+            icon: const Icon(Icons.flight_outlined),
+            selectedIcon: const Icon(Icons.flight),
+            label: l.navMyTrips,
           ),
           NavigationDestination(
-            icon: Icon(Icons.archive_outlined),
-            selectedIcon: Icon(Icons.archive),
-            label: 'Archive',
+            icon: const Icon(Icons.archive_outlined),
+            selectedIcon: const Icon(Icons.archive),
+            label: l.navArchive,
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
+            icon: const Icon(Icons.settings_outlined),
+            selectedIcon: const Icon(Icons.settings),
+            label: l.navSettings,
           ),
         ],
       ),
