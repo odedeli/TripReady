@@ -3,6 +3,8 @@ name: Build All Platforms
 on:
   push:
     branches: [ main ]
+  release:
+    types: [ published ]
   workflow_dispatch:
 
 jobs:
@@ -35,15 +37,21 @@ jobs:
       - name: Zip release bundle
         run: |
           cd build\windows\x64\runner
-          Compress-Archive -Path Release -DestinationPath TripReady_v1.0_Windows_x64.zip
+          Compress-Archive -Path Release -DestinationPath TripReady_v1.1_Windows_x64.zip
         shell: powershell
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Windows-zip
-          path: build\windows\x64\runner\TripReady_v1.0_Windows_x64.zip
+          path: build\windows\x64\runner\TripReady_v1.1_Windows_x64.zip
           retention-days: 30
+
+      - name: Attach to GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build\windows\x64\runner\TripReady_v1.1_Windows_x64.zip
 
   # ── Linux ─────────────────────────────────────────────────
   build-linux:
@@ -78,10 +86,15 @@ jobs:
       - name: Build Linux release
         run: flutter build linux --release
 
+      - name: Bundle libsqlite3 into build
+        run: |
+          cp /usr/lib/x86_64-linux-gnu/libsqlite3.so.0 build/linux/x64/release/bundle/lib/libsqlite3.so
+          ls -lh build/linux/x64/release/bundle/lib/libsqlite3.so
+
       - name: Create tar.gz package
         run: |
           cd build/linux/x64/release/
-          tar -czvf TripReady_v1.0_Linux_x64.tar.gz bundle/
+          tar -czvf TripReady_v1.1_Linux_x64.tar.gz bundle/
 
       - name: Create .deb package
         run: |
@@ -92,19 +105,20 @@ jobs:
           cp -r build/linux/x64/release/bundle/* tripready_deb/opt/tripready/
           chmod +x tripready_deb/opt/tripready/tripready
 
-          cat > tripready_deb/DEBIAN/control << EOF
+          cat > tripready_deb/DEBIAN/control << 'CONTROL'
           Package: tripready
-          Version: 1.0.0
+          Version: 1.1.0
           Section: utils
           Priority: optional
           Architecture: amd64
+          Depends: libgtk-3-0, libblkid1, liblzma5
           Maintainer: TripReady
           Description: TripReady - Personal Travel Planner
            Offline travel management app for managing trips,
            packing lists, tasks, addresses, receipts and documents.
-          EOF
+          CONTROL
 
-          cat > tripready_deb/usr/share/applications/tripready.desktop << EOF
+          cat > tripready_deb/usr/share/applications/tripready.desktop << 'DESKTOP'
           [Desktop Entry]
           Name=TripReady
           Comment=Personal Travel Planner
@@ -112,29 +126,37 @@ jobs:
           Terminal=false
           Type=Application
           Categories=Utility;
-          EOF
+          DESKTOP
 
-          cat > tripready_deb/DEBIAN/postinst << EOF
+          cat > tripready_deb/DEBIAN/postinst << 'POSTINST'
           #!/bin/bash
           chmod +x /opt/tripready/tripready
-          EOF
+          POSTINST
           chmod +x tripready_deb/DEBIAN/postinst
 
-          dpkg-deb --build tripready_deb TripReady_v1.0_amd64.deb
+          dpkg-deb --build tripready_deb TripReady_v1.1_amd64.deb
 
       - name: Upload tar.gz artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Linux-tar
-          path: build/linux/x64/release/TripReady_v1.0_Linux_x64.tar.gz
+          path: build/linux/x64/release/TripReady_v1.1_Linux_x64.tar.gz
           retention-days: 30
 
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Linux-deb
-          path: TripReady_v1.0_amd64.deb
+          path: TripReady_v1.1_amd64.deb
           retention-days: 30
+
+      - name: Attach to GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/linux/x64/release/TripReady_v1.1_Linux_x64.tar.gz
+            TripReady_v1.1_amd64.deb
 
   # ── Android ───────────────────────────────────────────────
   build-android:
@@ -167,11 +189,17 @@ jobs:
       - name: Rename APK
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk \
-             TripReady_v1.0_Android.apk
+             TripReady_v1.1_Android.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Android-apk
-          path: TripReady_v1.0_Android.apk
+          path: TripReady_v1.1_Android.apk
           retention-days: 30
+
+      - name: Attach to GitHub release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: TripReady_v1.1_Android.apk
