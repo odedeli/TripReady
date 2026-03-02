@@ -362,5 +362,10 @@
   "resetConfirmMismatch": "חייב להתאים בדיוק",
   "settingsContinue": "המשך",
   "settingsBackupFailed": "הגיבוי נכשל. לא נמצאו נתונים.",
-  "imageLoadError": "לא ניתן לטעון את התמונה"
+  "imageLoadError": "לא ניתן לטעון את התמונה",
+  "settingsAppearance": "מראה",
+  "settingsSelectTheme": "בחר ערכת נושא",
+  "themeLight": "בהיר",
+  "themeDark": "כהה",
+  "themeSystem": "לפי מערכת"
 }

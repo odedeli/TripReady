@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 // ── Font helpers ──────────────────────────────────────────────
-// Returns Poppins for English, DM Sans for Hebrew (Poppins has no Hebrew glyphs)
 TextStyle _f(
   String languageCode, {
   double size = 14,
@@ -10,14 +9,11 @@ TextStyle _f(
   Color? color,
   double? height,
 }) {
-  final base = languageCode == 'he'
+  return languageCode == 'he'
       ? GoogleFonts.dmSans(fontSize: size, fontWeight: weight, color: color, height: height)
       : GoogleFonts.poppins(fontSize: size, fontWeight: weight, color: color, height: height);
-  return base;
 }
 
-// Heading font: Poppins semibold for EN, DM Sans semibold for HE
-// (removed Playfair Display — no serif fonts in v1.2.0)
 TextStyle _h(
   String languageCode, {
   double size = 18,
@@ -30,29 +26,42 @@ TextStyle _h(
 }
 
 class TripReadyTheme {
-  // ── Palette ───────────────────────────────────────────────
-  static const Color navy      = Color(0xFF0D2B45);
-  static const Color teal      = Color(0xFF1A6B72);
-  static const Color tealLight = Color(0xFF2A9BA3);
-  static const Color amber     = Color(0xFFE8A838);
-  static const Color amberLight= Color(0xFFF5C96A);
-  static const Color cream     = Color(0xFFF7F3EE);
-  static const Color warmGrey  = Color(0xFFE8E2DA);
-  static const Color textDark  = Color(0xFF1A1A2E);
-  static const Color textMid   = Color(0xFF4A5568);
-  static const Color textLight = Color(0xFF8A9BB0);
-  static const Color success   = Color(0xFF2D9E6B);
-  static const Color warning   = Color(0xFFE8A838);
-  static const Color danger    = Color(0xFFD64045);
-  static const Color cardBg    = Color(0xFFFFFFFF);
+  // ── Light palette ─────────────────────────────────────────
+  static const Color navy       = Color(0xFF0D2B45);
+  static const Color teal       = Color(0xFF1A6B72);
+  static const Color tealLight  = Color(0xFF2A9BA3);
+  static const Color amber      = Color(0xFFE8A838);
+  static const Color amberLight = Color(0xFFF5C96A);
+  static const Color cream      = Color(0xFFF7F3EE);
+  static const Color warmGrey   = Color(0xFFE8E2DA);
+  static const Color textDark   = Color(0xFF1A1A2E);
+  static const Color textMid    = Color(0xFF4A5568);
+  static const Color textLight  = Color(0xFF8A9BB0);
+  static const Color success    = Color(0xFF2D9E6B);
+  static const Color warning    = Color(0xFFE8A838);
+  static const Color danger     = Color(0xFFD64045);
+  static const Color cardBg     = Color(0xFFFFFFFF);
 
-  // ── Theme builder ─────────────────────────────────────────
-  // languageCode drives font selection ('en' → Poppins, 'he' → DM Sans)
+  // ── Dark palette ──────────────────────────────────────────
+  static const Color darkBg         = Color(0xFF0F1923);
+  static const Color darkSurface    = Color(0xFF1A2633);
+  static const Color darkCard       = Color(0xFF1E2E3D);
+  static const Color darkNavy       = Color(0xFF0D2B45);
+  static const Color darkTeal       = Color(0xFF2A9BA3);
+  static const Color darkTealLight  = Color(0xFF3DBBC4);
+  static const Color darkAmber      = Color(0xFFE8A838);
+  static const Color darkAmberLight = Color(0xFFF5C96A);
+  static const Color darkTextDark   = Color(0xFFE8EDF2);
+  static const Color darkTextMid    = Color(0xFF9AACBE);
+  static const Color darkTextLight  = Color(0xFF5A7490);
+  static const Color darkWarmGrey   = Color(0xFF2A3A4A);
+
+  // ── Light theme ───────────────────────────────────────────
   static ThemeData theme({String languageCode = 'en'}) {
-    final String lc = languageCode;
-
+    final lc = languageCode;
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorScheme: ColorScheme(
         brightness: Brightness.light,
         primary: teal,
@@ -69,24 +78,7 @@ class TripReadyTheme {
         onError: Colors.white,
       ),
       scaffoldBackgroundColor: cream,
-
-      // ── Text theme ────────────────────────────────────────
-      textTheme: TextTheme(
-        displayLarge:  _h(lc, size: 36, weight: FontWeight.w700, color: navy),
-        displayMedium: _h(lc, size: 28, weight: FontWeight.w700, color: navy),
-        displaySmall:  _h(lc, size: 22, weight: FontWeight.w600, color: navy),
-        headlineMedium:_h(lc, size: 20, weight: FontWeight.w600, color: navy),
-        headlineSmall: _h(lc, size: 18, weight: FontWeight.w600, color: navy),
-        titleLarge:    _f(lc, size: 17, weight: FontWeight.w600, color: textDark),
-        titleMedium:   _f(lc, size: 15, weight: FontWeight.w600, color: textDark),
-        titleSmall:    _f(lc, size: 13, weight: FontWeight.w600, color: textMid),
-        bodyLarge:     _f(lc, size: 16, color: textDark),
-        bodyMedium:    _f(lc, size: 14, color: textDark),
-        bodySmall:     _f(lc, size: 12, color: textMid),
-        labelLarge:    _f(lc, size: 14, weight: FontWeight.w600, color: teal),
-      ),
-
-      // ── AppBar ────────────────────────────────────────────
+      textTheme: _buildTextTheme(lc, isLight: true),
       appBarTheme: AppBarTheme(
         backgroundColor: navy,
         foregroundColor: Colors.white,
@@ -94,16 +86,12 @@ class TripReadyTheme {
         titleTextStyle: _h(lc, size: 22, weight: FontWeight.w700, color: Colors.white),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-
-      // ── Cards ─────────────────────────────────────────────
       cardTheme: CardThemeData(
         color: cardBg,
         elevation: 2,
         shadowColor: navy.withOpacity(0.1),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
-
-      // ── Buttons ───────────────────────────────────────────
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: teal,
@@ -126,8 +114,6 @@ class TripReadyTheme {
         backgroundColor: amber,
         foregroundColor: navy,
       ),
-
-      // ── Inputs ────────────────────────────────────────────
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
@@ -138,8 +124,6 @@ class TripReadyTheme {
         labelStyle: _f(lc, size: 14, color: textMid),
         hintStyle:  _f(lc, size: 14, color: textLight),
       ),
-
-      // ── Chips ─────────────────────────────────────────────
       chipTheme: ChipThemeData(
         backgroundColor: warmGrey,
         selectedColor: teal.withOpacity(0.15),
@@ -147,10 +131,7 @@ class TripReadyTheme {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
-
       dividerTheme: const DividerThemeData(color: warmGrey, thickness: 1, space: 1),
-
-      // ── Navigation bar ────────────────────────────────────
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: navy,
         indicatorColor: teal,
@@ -164,6 +145,119 @@ class TripReadyTheme {
           return style.copyWith(color: Colors.white.withOpacity(0.5));
         }),
       ),
+    );
+  }
+
+  // ── Dark theme ────────────────────────────────────────────
+  static ThemeData darkTheme({String languageCode = 'en'}) {
+    final lc = languageCode;
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme(
+        brightness: Brightness.dark,
+        primary: darkTeal,
+        onPrimary: darkBg,
+        primaryContainer: darkTeal.withOpacity(0.2),
+        onPrimaryContainer: darkTextDark,
+        secondary: darkAmber,
+        onSecondary: darkBg,
+        secondaryContainer: darkAmber.withOpacity(0.2),
+        onSecondaryContainer: darkTextDark,
+        surface: darkSurface,
+        onSurface: darkTextDark,
+        error: danger,
+        onError: Colors.white,
+      ),
+      scaffoldBackgroundColor: darkBg,
+      textTheme: _buildTextTheme(lc, isLight: false),
+      appBarTheme: AppBarTheme(
+        backgroundColor: darkNavy,
+        foregroundColor: darkTextDark,
+        elevation: 0,
+        titleTextStyle: _h(lc, size: 22, weight: FontWeight.w700, color: darkTextDark),
+        iconTheme: IconThemeData(color: darkTextDark),
+      ),
+      cardTheme: CardThemeData(
+        color: darkCard,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: darkTeal,
+          foregroundColor: darkBg,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: _f(lc, size: 15, weight: FontWeight.w600),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: darkTeal,
+          side: BorderSide(color: darkTeal, width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: _f(lc, size: 15, weight: FontWeight.w600),
+        ),
+      ),
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
+        backgroundColor: darkAmber,
+        foregroundColor: darkBg,
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: darkCard,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border:        OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: darkWarmGrey)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: darkWarmGrey)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: darkTeal, width: 2)),
+        labelStyle: _f(lc, size: 14, color: darkTextMid),
+        hintStyle:  _f(lc, size: 14, color: darkTextLight),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: darkWarmGrey,
+        selectedColor: darkTeal.withOpacity(0.25),
+        labelStyle: _f(lc, size: 12, weight: FontWeight.w500, color: darkTextDark),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      ),
+      dividerTheme: DividerThemeData(color: darkWarmGrey, thickness: 1, space: 1),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: darkNavy,
+        indicatorColor: darkTeal,
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return IconThemeData(color: darkBg);
+          return IconThemeData(color: darkTextMid);
+        }),
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final style = _f(lc, size: 12, weight: FontWeight.w600);
+          if (states.contains(WidgetState.selected)) return style.copyWith(color: darkTextDark);
+          return style.copyWith(color: darkTextMid);
+        }),
+      ),
+    );
+  }
+
+  // ── Text theme builder ────────────────────────────────────
+  static TextTheme _buildTextTheme(String lc, {required bool isLight}) {
+    final heading = isLight ? navy : darkTextDark;
+    final body    = isLight ? textDark : darkTextDark;
+    final mid     = isLight ? textMid : darkTextMid;
+    final accent  = isLight ? teal : darkTeal;
+    return TextTheme(
+      displayLarge:  _h(lc, size: 36, weight: FontWeight.w700, color: heading),
+      displayMedium: _h(lc, size: 28, weight: FontWeight.w700, color: heading),
+      displaySmall:  _h(lc, size: 22, weight: FontWeight.w600, color: heading),
+      headlineMedium:_h(lc, size: 20, weight: FontWeight.w600, color: heading),
+      headlineSmall: _h(lc, size: 18, weight: FontWeight.w600, color: heading),
+      titleLarge:    _f(lc, size: 17, weight: FontWeight.w600, color: body),
+      titleMedium:   _f(lc, size: 15, weight: FontWeight.w600, color: body),
+      titleSmall:    _f(lc, size: 13, weight: FontWeight.w600, color: mid),
+      bodyLarge:     _f(lc, size: 16, color: body),
+      bodyMedium:    _f(lc, size: 14, color: body),
+      bodySmall:     _f(lc, size: 12, color: mid),
+      labelLarge:    _f(lc, size: 14, weight: FontWeight.w600, color: accent),
     );
   }
 }

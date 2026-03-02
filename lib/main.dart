@@ -7,6 +7,7 @@ import 'screens/trips_screen.dart';
 import 'screens/archive/archive_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/language_service.dart';
+import 'services/theme_service.dart';
 import 'package:tripready/l10n/app_localizations.dart';
 
 void main() async {
@@ -16,6 +17,7 @@ void main() async {
     databaseFactory = databaseFactoryFfi;
   }
   await LanguageService.instance.load();
+  await ThemeService.instance.load();
   runApp(const TripReadyApp());
 }
 
@@ -30,23 +32,28 @@ class _TripReadyAppState extends State<TripReadyApp> {
   @override
   void initState() {
     super.initState();
-    LanguageService.instance.addListener(_onLocaleChange);
+    LanguageService.instance.addListener(_rebuild);
+    ThemeService.instance.addListener(_rebuild);
   }
 
   @override
   void dispose() {
-    LanguageService.instance.removeListener(_onLocaleChange);
+    LanguageService.instance.removeListener(_rebuild);
+    ThemeService.instance.removeListener(_rebuild);
     super.dispose();
   }
 
-  void _onLocaleChange() => setState(() {});
+  void _rebuild() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
+    final lc = LanguageService.instance.locale.languageCode;
     return MaterialApp(
       title: 'TripReady',
       debugShowCheckedModeBanner: false,
-      theme: TripReadyTheme.theme(languageCode: LanguageService.instance.locale.languageCode),
+      themeMode: ThemeService.instance.themeMode,
+      theme:     TripReadyTheme.theme(languageCode: lc),
+      darkTheme: TripReadyTheme.darkTheme(languageCode: lc),
       locale: LanguageService.instance.locale,
       supportedLocales: LanguageService.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,

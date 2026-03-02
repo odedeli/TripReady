@@ -362,5 +362,10 @@
   "resetConfirmMismatch": "Must match exactly",
   "settingsContinue": "Continue",
   "settingsBackupFailed": "Backup failed. No data found.",
-  "imageLoadError": "Could not load image"
+  "imageLoadError": "Could not load image",
+  "settingsAppearance": "Appearance",
+  "settingsSelectTheme": "Select Theme",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "themeSystem": "System"
 }

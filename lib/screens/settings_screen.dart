@@ -3,6 +3,7 @@ import 'package:tripready/l10n/app_localizations.dart';
 import '../database/backup_service.dart';
 import '../database/database_helper.dart';
 import '../services/language_service.dart';
+import '../services/theme_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -19,6 +20,12 @@ class SettingsScreen extends StatelessWidget {
           // ── Language ──
           _SectionLabel(l.settingsLanguage),
           const _LanguageTile(),
+
+          const SizedBox(height: 24),
+
+          // ── Appearance ──
+          _SectionLabel(l.settingsAppearance),
+          const _ThemeTile(),
 
           const SizedBox(height: 24),
 
@@ -260,6 +267,102 @@ class _LangOption {
   final String label;
   final String flag;
   const _LangOption({required this.code, required this.label, required this.flag});
+}
+
+// ── Theme Dropdown Tile ───────────────────────────────────────
+class _ThemeTile extends StatefulWidget {
+  const _ThemeTile();
+
+  @override
+  State<_ThemeTile> createState() => _ThemeTileState();
+}
+
+class _ThemeTileState extends State<_ThemeTile> {
+  @override
+  void initState() {
+    super.initState();
+    ThemeService.instance.addListener(_rebuild);
+  }
+
+  @override
+  void dispose() {
+    ThemeService.instance.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final current = ThemeService.instance.mode;
+
+    final options = [
+      _ThemeOption(mode: AppThemeMode.light,  label: l.themeLight,  icon: Icons.light_mode_outlined),
+      _ThemeOption(mode: AppThemeMode.dark,   label: l.themeDark,   icon: Icons.dark_mode_outlined),
+      _ThemeOption(mode: AppThemeMode.system, label: l.themeSystem, icon: Icons.brightness_auto_outlined),
+    ];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: TripReadyTheme.teal.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.palette_outlined,
+                color: TripReadyTheme.teal, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(l.settingsSelectTheme,
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 6),
+              DropdownButtonFormField<AppThemeMode>(
+                value: current,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: TripReadyTheme.warmGrey),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: TripReadyTheme.teal, width: 2),
+                  ),
+                ),
+                items: options.map((opt) => DropdownMenuItem<AppThemeMode>(
+                  value: opt.mode,
+                  child: Row(children: [
+                    Icon(opt.icon, size: 20, color: TripReadyTheme.teal),
+                    const SizedBox(width: 10),
+                    Text(opt.label, style: const TextStyle(fontSize: 14)),
+                  ]),
+                )).toList(),
+                onChanged: (mode) {
+                  if (mode != null) ThemeService.instance.setMode(mode);
+                },
+              ),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+class _ThemeOption {
+  final AppThemeMode mode;
+  final String label;
+  final IconData icon;
+  const _ThemeOption({required this.mode, required this.label, required this.icon});
 }
 
 // ── Final Reset Confirmation ──────────────────────────────────
