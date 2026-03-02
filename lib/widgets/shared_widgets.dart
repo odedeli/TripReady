@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../theme/app_theme.dart';
 import '../services/localization_ext.dart';
 
@@ -26,7 +25,7 @@ class StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: GoogleFonts.dmSans(
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
           fontSize: 11,
           fontWeight: FontWeight.w700,
           color: textColor,
@@ -242,11 +241,11 @@ class StatCard extends StatelessWidget {
               child: Icon(icon, size: 20, color: accent),
             ),
             const SizedBox(height: 12),
-            Text(value, style: GoogleFonts.playfairDisplay(
+            Text(value, style: Theme.of(context).textTheme.displaySmall?.copyWith(
               fontSize: 22, fontWeight: FontWeight.w700, color: TripReadyTheme.navy,
             )),
             const SizedBox(height: 2),
-            Text(label, style: GoogleFonts.dmSans(
+            Text(label, style: Theme.of(context).textTheme.bodySmall?.copyWith(
               fontSize: 12, color: TripReadyTheme.textMid,
             )),
           ],

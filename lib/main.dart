@@ -46,7 +46,7 @@ class _TripReadyAppState extends State<TripReadyApp> {
     return MaterialApp(
       title: 'TripReady',
       debugShowCheckedModeBanner: false,
-      theme: TripReadyTheme.theme,
+      theme: TripReadyTheme.theme(languageCode: LanguageService.instance.locale.languageCode),
       locale: LanguageService.instance.locale,
       supportedLocales: LanguageService.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
