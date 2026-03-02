@@ -367,5 +367,9 @@
   "settingsSelectTheme": "בחר ערכת נושא",
   "themeLight": "בהיר",
   "themeDark": "כהה",
-  "themeSystem": "לפי מערכת"
+  "themeSystem": "לפי מערכת",
+  "settingsTextSize": "גודל טקסט",
+  "fontSmall": "קטן",
+  "fontNormal": "רגיל",
+  "fontLarge": "גדול"
 }

@@ -4,6 +4,7 @@ import '../database/backup_service.dart';
 import '../database/database_helper.dart';
 import '../services/language_service.dart';
 import '../services/theme_service.dart';
+import '../services/font_size_service.dart';
 import '../theme/app_theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -26,6 +27,7 @@ class SettingsScreen extends StatelessWidget {
           // ── Appearance ──
           _SectionLabel(l.settingsAppearance),
           const _ThemeTile(),
+          const _FontSizeTile(),
 
           const SizedBox(height: 24),
 
@@ -374,6 +376,117 @@ class _ThemeOption {
   final String label;
   final IconData icon;
   const _ThemeOption({required this.mode, required this.label, required this.icon});
+}
+
+// ── Font Size Tile ───────────────────────────────────────────
+class _FontSizeTile extends StatefulWidget {
+  const _FontSizeTile();
+
+  @override
+  State<_FontSizeTile> createState() => _FontSizeTileState();
+}
+
+class _FontSizeTileState extends State<_FontSizeTile> {
+  @override
+  void initState() {
+    super.initState();
+    FontSizeService.instance.addListener(_rebuild);
+  }
+
+  @override
+  void dispose() {
+    FontSizeService.instance.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final current = FontSizeService.instance.size;
+
+    final options = [
+      _FontOption(size: AppFontSize.small,  label: l.fontSmall,  previewSize: 12),
+      _FontOption(size: AppFontSize.normal, label: l.fontNormal, previewSize: 15),
+      _FontOption(size: AppFontSize.large,  label: l.fontLarge,  previewSize: 18),
+    ];
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        child: Row(children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+              color: TripReadyTheme.navy.withOpacity(0.10),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: const Icon(Icons.text_fields_outlined,
+                color: TripReadyTheme.navy, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(l.settingsTextSize,
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 10),
+              Row(children: options.map((opt) {
+                final selected = current == opt.size;
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => FontSizeService.instance.setSize(opt.size),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? TripReadyTheme.navy
+                              : TripReadyTheme.navy.withOpacity(0.06),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: selected
+                                ? TripReadyTheme.navy
+                                : TripReadyTheme.warmGrey,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          Text('A',
+                              style: TextStyle(
+                                fontSize: opt.previewSize,
+                                fontWeight: FontWeight.w700,
+                                color: selected ? Colors.white : TripReadyTheme.navy,
+                              )),
+                          const SizedBox(height: 2),
+                          Text(opt.label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: selected ? Colors.white : TripReadyTheme.navy,
+                              )),
+                        ]),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList()),
+            ]),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+class _FontOption {
+  final AppFontSize size;
+  final String label;
+  final double previewSize;
+  const _FontOption({required this.size, required this.label, required this.previewSize});
 }
 
 // ── Final Reset Confirmation ──────────────────────────────────

@@ -296,6 +296,10 @@ abstract class AppLocalizations {
   String get themeLight;
   String get themeDark;
   String get themeSystem;
+  String get settingsTextSize;
+  String get fontSmall;
+  String get fontNormal;
+  String get fontLarge;
   String fieldExchangeRate(String currency);
   String dashboardDaysUntil(int days);
   String tripsDays(int count);
@@ -878,6 +882,14 @@ class _AppLocalizationsEn extends AppLocalizations {
   @override
   String get themeSystem => 'System';
   @override
+  String get settingsTextSize => 'Text Size';
+  @override
+  String get fontSmall => 'Small';
+  @override
+  String get fontNormal => 'Normal';
+  @override
+  String get fontLarge => 'Large';
+  @override
   String fieldExchangeRate(String currency) => 'Exchange Rate to ' + currency.toString() + '';
   @override
   String dashboardDaysUntil(int days) => '' + days.toString() + ' days until departure';
@@ -1451,6 +1463,14 @@ class _AppLocalizationsHe extends AppLocalizations {
   String get themeDark => 'כהה';
   @override
   String get themeSystem => 'לפי מערכת';
+  @override
+  String get settingsTextSize => 'גודל טקסט';
+  @override
+  String get fontSmall => 'קטן';
+  @override
+  String get fontNormal => 'רגיל';
+  @override
+  String get fontLarge => 'גדול';
   @override
   String fieldExchangeRate(String currency) => 'שער חליפין ל' + currency.toString() + '';
   @override

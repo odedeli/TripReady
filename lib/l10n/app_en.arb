@@ -367,5 +367,9 @@
   "settingsSelectTheme": "Select Theme",
   "themeLight": "Light",
   "themeDark": "Dark",
-  "themeSystem": "System"
+  "themeSystem": "System",
+  "settingsTextSize": "Text Size",
+  "fontSmall": "Small",
+  "fontNormal": "Normal",
+  "fontLarge": "Large"
 }

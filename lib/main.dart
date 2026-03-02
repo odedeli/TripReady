@@ -8,6 +8,7 @@ import 'screens/archive/archive_screen.dart';
 import 'screens/settings_screen.dart';
 import 'services/language_service.dart';
 import 'services/theme_service.dart';
+import 'services/font_size_service.dart';
 import 'package:tripready/l10n/app_localizations.dart';
 
 void main() async {
@@ -18,6 +19,7 @@ void main() async {
   }
   await LanguageService.instance.load();
   await ThemeService.instance.load();
+  await FontSizeService.instance.load();
   runApp(const TripReadyApp());
 }
 
@@ -34,12 +36,14 @@ class _TripReadyAppState extends State<TripReadyApp> {
     super.initState();
     LanguageService.instance.addListener(_rebuild);
     ThemeService.instance.addListener(_rebuild);
+    FontSizeService.instance.addListener(_rebuild);
   }
 
   @override
   void dispose() {
     LanguageService.instance.removeListener(_rebuild);
     ThemeService.instance.removeListener(_rebuild);
+    FontSizeService.instance.removeListener(_rebuild);
     super.dispose();
   }
 
@@ -48,12 +52,13 @@ class _TripReadyAppState extends State<TripReadyApp> {
   @override
   Widget build(BuildContext context) {
     final lc = LanguageService.instance.locale.languageCode;
+    final fs = FontSizeService.instance.scale;
     return MaterialApp(
       title: 'TripReady',
       debugShowCheckedModeBanner: false,
       themeMode: ThemeService.instance.themeMode,
-      theme:     TripReadyTheme.theme(languageCode: lc),
-      darkTheme: TripReadyTheme.darkTheme(languageCode: lc),
+      theme:     TripReadyTheme.theme(languageCode: lc, fontScale: fs),
+      darkTheme: TripReadyTheme.darkTheme(languageCode: lc, fontScale: fs),
       locale: LanguageService.instance.locale,
       supportedLocales: LanguageService.supportedLocales,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
