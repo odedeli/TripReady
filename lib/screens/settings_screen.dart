@@ -322,34 +322,45 @@ class _ThemeTileState extends State<_ThemeTile> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(l.settingsSelectTheme,
                   style: Theme.of(context).textTheme.titleMedium),
-              const SizedBox(height: 6),
-              DropdownButtonFormField<AppThemeMode>(
-                value: current,
-                isExpanded: true,
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: TripReadyTheme.warmGrey),
+              const SizedBox(height: 10),
+              Row(children: options.map((opt) {
+                final selected = current == opt.mode;
+                return Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: () => ThemeService.instance.setMode(opt.mode),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? TripReadyTheme.teal
+                              : TripReadyTheme.teal.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: selected
+                                ? TripReadyTheme.teal
+                                : TripReadyTheme.warmGrey,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(opt.icon, size: 22,
+                              color: selected ? Colors.white : TripReadyTheme.teal),
+                          const SizedBox(height: 4),
+                          Text(opt.label,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: selected ? Colors.white : TripReadyTheme.teal,
+                              )),
+                        ]),
+                      ),
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: TripReadyTheme.teal, width: 2),
-                  ),
-                ),
-                items: options.map((opt) => DropdownMenuItem<AppThemeMode>(
-                  value: opt.mode,
-                  child: Row(children: [
-                    Icon(opt.icon, size: 20, color: TripReadyTheme.teal),
-                    const SizedBox(width: 10),
-                    Text(opt.label, style: const TextStyle(fontSize: 14)),
-                  ]),
-                )).toList(),
-                onChanged: (mode) {
-                  if (mode != null) ThemeService.instance.setMode(mode);
-                },
-              ),
+                );
+              }).toList()),
             ]),
           ),
         ]),
