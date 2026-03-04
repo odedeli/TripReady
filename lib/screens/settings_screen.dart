@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_logo.dart';
+import '../widgets/shared_widgets.dart';
 import '../widgets/watermark_scaffold.dart';
 import 'package:tripready/l10n/app_localizations.dart';
 import '../database/backup_service.dart';
@@ -8,6 +9,7 @@ import '../services/language_service.dart';
 import '../services/theme_service.dart';
 import '../services/font_size_service.dart';
 import '../services/color_theme_service.dart';
+import 'settings/customize_lists_screen.dart';
 import '../theme/color_palettes.dart';
 import '../theme/app_theme.dart';
 
@@ -18,7 +20,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true),
+      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true, leading: HomeButton()),
       body: WatermarkBody(
         child: ListView(
         padding: const EdgeInsets.all(20),
@@ -31,6 +33,15 @@ class SettingsScreen extends StatelessWidget {
           const _ThemeTile(),
           const _FontSizeTile(),
           const _ColorThemeTile(),
+          const SizedBox(height: 24),
+
+          _SectionLabel('Customize Lists'),
+          _SettingsTile(
+            icon: Icons.tune_outlined,
+            title: 'Trip & Packing Lists',
+            subtitle: 'Manage dropdown values for trip type, purpose, packing categories and storage locations',
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomizeListsScreen())),
+          ),
           const SizedBox(height: 24),
 
           _SectionLabel(l.settingsDataManagement),
@@ -50,7 +61,7 @@ class SettingsScreen extends StatelessWidget {
               onTap: () => showAboutDialog(
                 context: context,
                 applicationName: 'TripReady',
-                applicationVersion: '1.2.0',
+                applicationVersion: '1.3.0',
                 applicationIcon: Padding(
                   padding: const EdgeInsets.all(8),
                   child: AppLogo.icon(size: 56),
@@ -76,7 +87,7 @@ class SettingsScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Text('v1.2.0  \u2022  \${l.settingsAboutSubtitle}',
+                          Text('v1.3.0',
                               style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),

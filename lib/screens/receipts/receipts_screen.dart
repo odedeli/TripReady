@@ -70,6 +70,7 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
       appBar: AppBar(
         title: Text(l.receiptsTitle),
         actions: [
+          HomeButton(),
           if (_receipts.isNotEmpty)
             PopupMenuButton<ReceiptType?>(
               icon: const Icon(Icons.filter_list_outlined),

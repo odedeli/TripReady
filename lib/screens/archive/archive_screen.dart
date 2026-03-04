@@ -33,7 +33,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   Widget build(BuildContext context) {
     final l = context.l;
     return Scaffold(
-      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true, actions: [Padding(padding: EdgeInsets.only(right: 12), child: Text('Archive', style: TextStyle(color: Colors.white70, fontSize: 13)))]),
+      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true, leading: HomeButton()),
       body: WatermarkBody(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
@@ -97,7 +97,7 @@ class _ArchivedTripCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(children: [
             const Icon(Icons.place_outlined, size: 13, color: TripReadyTheme.teal), const SizedBox(width: 4),
-            Text(trip.country != null ? '${trip.destination}, ${trip.country}' : trip.destination,
+            Text(trip.countryDisplay != null ? '${trip.destination}, ${trip.countryDisplay}' : trip.destination,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: TripReadyTheme.teal, fontWeight: FontWeight.w500)),
           ]),
           const SizedBox(height: 4),
@@ -106,8 +106,8 @@ class _ArchivedTripCard extends StatelessWidget {
             Text('${fmt.format(trip.departureDate)} → ${fmt.format(trip.returnDate)} · ${trip.durationDays}d', style: Theme.of(context).textTheme.bodySmall),
           ]),
           const SizedBox(height: 10),
-          OutlinedButton.icon(onPressed: onClone, icon: const Icon(Icons.copy_outlined, size: 16), label: Text(l.archiveCloneTrip),
-            style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), textStyle: const TextStyle(fontSize: 13))),
+          ElevatedButton.icon(onPressed: onClone, icon: const Icon(Icons.copy_outlined, size: 16), label: Text(l.archiveCloneTrip),
+            style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), textStyle: const TextStyle(fontSize: 13))),
         ])),
       ),
     );

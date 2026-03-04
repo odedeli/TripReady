@@ -214,7 +214,7 @@ class _TripCard extends StatelessWidget {
             Row(children: [
               const Icon(Icons.place_outlined, size: 14, color: TripReadyTheme.teal),
               const SizedBox(width: 4),
-              Text(trip.country != null ? '${trip.destination}, ${trip.country}' : trip.destination,
+              Text(trip.countryDisplay != null ? '${trip.destination}, ${trip.countryDisplay}' : trip.destination,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: TripReadyTheme.teal, fontWeight: FontWeight.w500)),
             ]),
             const SizedBox(height: 6),

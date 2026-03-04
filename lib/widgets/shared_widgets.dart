@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../services/localization_ext.dart';
+import '../main.dart' show tabNotifier;
 
 // ── Status Badge ──────────────────────────────────────────────
 class StatusBadge extends StatelessWidget {
@@ -251,6 +252,25 @@ class StatCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+// ── Home Button ───────────────────────────────────────────────
+/// Navigates to the Dashboard tab and pops all routes above it.
+class HomeButton extends StatelessWidget {
+  const HomeButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.home_outlined),
+      tooltip: 'Dashboard',
+      onPressed: () {
+        // Pop back to root (the main scaffold)
+        Navigator.of(context).popUntil((route) => route.isFirst);
+        tabNotifier.value = 0;
+      },
     );
   }
 }

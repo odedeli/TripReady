@@ -12,6 +12,7 @@ import 'services/language_service.dart';
 import 'services/theme_service.dart';
 import 'services/font_size_service.dart';
 import 'services/color_theme_service.dart';
+import 'services/lookup_service.dart';
 import 'package:tripready/l10n/app_localizations.dart';
 
 void main() async {
@@ -24,6 +25,7 @@ void main() async {
   await ThemeService.instance.load();
   await FontSizeService.instance.load();
   await ColorThemeService.instance.load();
+  await LookupService.instance.load();
   runApp(const TripReadyApp());
 }
 

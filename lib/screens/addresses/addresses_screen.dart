@@ -61,6 +61,7 @@ class _AddressesScreenState extends State<AddressesScreen> {
       appBar: AppBar(
         title: Text(l.addressesTitle),
         actions: [
+          HomeButton(),
           if (usedCategories.length > 1)
             PopupMenuButton<AddressCategory?>(
               icon: const Icon(Icons.filter_list_outlined),

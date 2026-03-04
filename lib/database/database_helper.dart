@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 import '../models/trip.dart';
+import '../models/lookup_value.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -19,8 +21,9 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
     return await openDatabase(
       path,
-      version: 1,
+      version: 4,
       onCreate: _createDB,
+      onUpgrade: _upgradeDB,
     );
   }
 
@@ -99,6 +102,8 @@ class DatabaseHelper {
         status TEXT NOT NULL DEFAULT 'pending',
         notes TEXT,
         created_at TEXT NOT NULL,
+        source TEXT NOT NULL DEFAULT 'task',
+        source_id TEXT,
         FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE
       )
     ''');
@@ -148,6 +153,149 @@ class DatabaseHelper {
         FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE
       )
     ''');
+
+    await _createLookupTable(db);
+    await _seedLookupValues(db);
+  }
+
+  Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await _createLookupTable(db);
+      await _seedLookupValues(db);
+    }
+    if (oldVersion < 3) {
+      // Add source tracking to tasks for packing ↔ task integration
+      await db.execute(
+          "ALTER TABLE tasks ADD COLUMN source TEXT NOT NULL DEFAULT 'task'");
+      await db.execute(
+          'ALTER TABLE tasks ADD COLUMN source_id TEXT');
+    }
+    if (oldVersion < 4) {
+      // Seed the new packingAction lookup category
+      await _seedPackingActions(db);
+    }
+  }
+
+  Future<void> _createLookupTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS lookup_values (
+        id            TEXT PRIMARY KEY,
+        category      TEXT NOT NULL,
+        value_key     TEXT,
+        display_en    TEXT NOT NULL,
+        display_he    TEXT NOT NULL DEFAULT '',
+        is_default    INTEGER NOT NULL DEFAULT 1,
+        is_enabled    INTEGER NOT NULL DEFAULT 1,
+        display_order INTEGER NOT NULL DEFAULT 0
+      )
+    ''');
+  }
+
+  Future<void> _seedLookupValues(Database db) async {
+    final count = Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM lookup_values')) ?? 0;
+    if (count > 0) return;
+
+    const seeds = [
+      // Trip Type
+      ('trip_type', 'leisure',   'Leisure',   'פנאי',           0),
+      ('trip_type', 'business',  'Business',  'עסקים',          1),
+      ('trip_type', 'family',    'Family',    'משפחה',          2),
+      ('trip_type', 'adventure', 'Adventure', 'הרפתקה',         3),
+      ('trip_type', 'medical',   'Medical',   'רפואי',          4),
+      ('trip_type', 'other',     'Other',     'אחר',            5),
+      // Trip Purpose
+      ('trip_purpose', 'holiday',      'Holiday',       'חופשה',          0),
+      ('trip_purpose', 'work_trip',    'Work Trip',     'נסיעת עבודה',    1),
+      ('trip_purpose', 'family_visit', 'Family Visit',  'ביקור משפחה',    2),
+      ('trip_purpose', 'conference',   'Conference',    'כנס',            3),
+      ('trip_purpose', 'medical',      'Medical',       'מסיבות רפואיות', 4),
+      ('trip_purpose', 'other',        'Other',         'אחר',            5),
+      // Packing Category
+      ('packing_category', 'clothing',      'Clothing',        'ביגוד',         0),
+      ('packing_category', 'toiletries',    'Toiletries',      'טיפוח',         1),
+      ('packing_category', 'electronics',   'Electronics',     'אלקטרוניקה',    2),
+      ('packing_category', 'documents',     'Documents',       'מסמכים',        3),
+      ('packing_category', 'medication',    'Medication',      'תרופות',        4),
+      ('packing_category', 'food_snacks',   'Food & Snacks',   'אוכל וחטיפים',  5),
+      ('packing_category', 'accessories',   'Accessories',     'אביזרים',       6),
+      ('packing_category', 'sport_outdoor', 'Sport & Outdoor', 'ספורט וטבע',    7),
+      ('packing_category', 'baby_kids',     'Baby & Kids',     'תינוק וילדים',  8),
+      ('packing_category', 'work_office',   'Work & Office',   'עבודה ומשרד',   9),
+      ('packing_category', 'other',         'Other',           'אחר',           10),
+      // Storage Location
+      ('storage_location', 'checkin',      'Check-in Luggage', 'מזוודה לטעינה', 0),
+      ('storage_location', 'hand_luggage', 'Hand Luggage',     'כבודת יד',      1),
+      ('storage_location', 'backpack',     'Backpack',         'תיק גב',        2),
+      ('storage_location', 'toiletry_bag', 'Toiletry Bag',     'תיק טיפוח',     3),
+      ('storage_location', 'laptop_bag',   'Laptop Bag',       'תיק מחשב',      4),
+      ('storage_location', 'handbag',      'Handbag / Purse',  'תיק יד',        5),
+      ('storage_location', 'wallet',       'Wallet',           'ארנק',          6),
+      ('storage_location', 'money_belt',   'Money Belt',       'חגורת כסף',     7),
+      ('storage_location', 'car_boot',     'Car Boot',         'תא מטען',       8),
+      ('storage_location', 'shipping_box', 'Shipping Box',     'קופסת משלוח',   9),
+      ('storage_location', 'other',        'Other',            'אחר',           10),
+      // Packing Action
+      ('packing_action', 'buy',       'Buy',       'לקנות',    0),
+      ('packing_action', 'clean',     'Clean',     'לנקות',    1),
+      ('packing_action', 'retrieve',  'Retrieve',  'להביא',    2),
+      ('packing_action', 'print',     'Print',     'להדפיס',   3),
+      ('packing_action', 'charge',    'Charge',    'לטעון',    4),
+      ('packing_action', 'repair',    'Repair',    'לתקן',     5),
+      ('packing_action', 'pack',      'Pack',      'לארוז',    6),
+      ('packing_action', 'iron',      'Iron',      'לגהץ',     7),
+      ('packing_action', 'borrow',    'Borrow',    'לשאול',    8),
+      ('packing_action', 'other',     'Other',     'אחר',      9),
+    ];
+
+    const uuid = Uuid();
+    final batch = db.batch();
+    for (final (cat, key, en, he, order) in seeds) {
+      batch.insert('lookup_values', {
+        'id':            uuid.v4(),
+        'category':      cat,
+        'value_key':     key,
+        'display_en':    en,
+        'display_he':    he,
+        'is_default':    1,
+        'is_enabled':    1,
+        'display_order': order,
+      });
+    }
+    await batch.commit(noResult: true);
+  }
+
+  Future<void> _seedPackingActions(Database db) async {
+    final count = Sqflite.firstIntValue(await db.rawQuery(
+        "SELECT COUNT(*) FROM lookup_values WHERE category = 'packing_action'")) ?? 0;
+    if (count > 0) return;
+    const actions = [
+      ('buy',      'Buy',      'לקנות',   0),
+      ('clean',    'Clean',    'לנקות',   1),
+      ('retrieve', 'Retrieve', 'להביא',   2),
+      ('print',    'Print',    'להדפיס',  3),
+      ('charge',   'Charge',   'לטעון',   4),
+      ('repair',   'Repair',   'לתקן',    5),
+      ('pack',     'Pack',     'לארוז',   6),
+      ('iron',     'Iron',     'לגהץ',    7),
+      ('borrow',   'Borrow',   'לשאול',   8),
+      ('other',    'Other',    'אחר',     9),
+    ];
+    const uuid = Uuid();
+    final batch = db.batch();
+    for (final (key, en, he, order) in actions) {
+      batch.insert('lookup_values', {
+        'id':            uuid.v4(),
+        'category':      'packing_action',
+        'value_key':     key,
+        'display_en':    en,
+        'display_he':    he,
+        'is_default':    1,
+        'is_enabled':    1,
+        'display_order': order,
+      });
+    }
+    await batch.commit(noResult: true);
   }
 
   // ==================== TRIPS ====================
@@ -229,6 +377,7 @@ class DatabaseHelper {
       'receipts',
       'documents',
       'trips',
+      'lookup_values',
     ];
     await db.transaction((txn) async {
       for (final table in tables) {
@@ -273,6 +422,9 @@ class DatabaseHelper {
     final receiptCount = Sqflite.firstIntValue(
         await db.rawQuery('SELECT COUNT(*) FROM receipts WHERE trip_id = ?', [tripId])) ?? 0;
 
+    final documentCount = Sqflite.firstIntValue(
+        await db.rawQuery('SELECT COUNT(*) FROM documents WHERE trip_id = ?', [tripId])) ?? 0;
+
     return {
       'packing_total': packingTotal,
       'packing_packed': packingPacked,
@@ -280,6 +432,7 @@ class DatabaseHelper {
       'tasks_done': tasksDone,
       'address_count': addressCount,
       'receipt_count': receiptCount,
+      'document_count': documentCount,
     };
   }
 

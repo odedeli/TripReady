@@ -2,6 +2,9 @@
 
 enum TaskStatus { pending, inProgress, done }
 
+/// Whether a task was created manually or auto-generated from a packing item.
+enum TaskSource { task, packing }
+
 class TripTask {
   final String id;
   final String tripId;
@@ -10,6 +13,8 @@ class TripTask {
   final TaskStatus status;
   final String? notes;
   final DateTime createdAt;
+  final TaskSource source;
+  final String? sourceId; // packing_items.id when source == packing
 
   TripTask({
     required this.id,
@@ -19,9 +24,12 @@ class TripTask {
     this.status = TaskStatus.pending,
     this.notes,
     required this.createdAt,
+    this.source = TaskSource.task,
+    this.sourceId,
   });
 
-  bool get isDone => status == TaskStatus.done;
+  bool get isDone       => status == TaskStatus.done;
+  bool get isFromPacking => source == TaskSource.packing;
 
   String get statusLabel {
     switch (status) {
@@ -39,6 +47,8 @@ class TripTask {
     'status': status.name,
     'notes': notes,
     'created_at': createdAt.toIso8601String(),
+    'source': source.name,
+    'source_id': sourceId,
   };
 
   factory TripTask.fromMap(Map<String, dynamic> map) => TripTask(
@@ -52,6 +62,11 @@ class TripTask {
     ),
     notes: map['notes'],
     createdAt: DateTime.parse(map['created_at']),
+    source: TaskSource.values.firstWhere(
+      (e) => e.name == (map['source'] ?? 'task'),
+      orElse: () => TaskSource.task,
+    ),
+    sourceId: map['source_id'],
   );
 
   TripTask copyWith({
@@ -63,6 +78,8 @@ class TripTask {
     TaskStatus? status,
     String? notes,
     DateTime? createdAt,
+    TaskSource? source,
+    String? sourceId,
   }) => TripTask(
     id: id ?? this.id,
     tripId: tripId ?? this.tripId,
@@ -71,6 +88,8 @@ class TripTask {
     status: status ?? this.status,
     notes: notes ?? this.notes,
     createdAt: createdAt ?? this.createdAt,
+    source: source ?? this.source,
+    sourceId: sourceId ?? this.sourceId,
   );
 }
 

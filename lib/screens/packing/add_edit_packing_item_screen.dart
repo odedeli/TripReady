@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-import '../../models/packing.dart';
+import '../../models/packing.dart'; // PackingItem, PackingStatus
 import '../../database/database_helper.dart';
 import '../../database/packing_database.dart';
 import '../../theme/app_theme.dart';
 import '../../services/localization_ext.dart';
+import '../../services/lookup_service.dart';
+import '../../database/trip_details_database.dart';
+import '../../services/language_service.dart';
+import '../../models/lookup_value.dart';
 
 class AddEditPackingItemScreen extends StatefulWidget {
   final String tripId;
@@ -18,40 +22,31 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
-  final _newTaskController = TextEditingController();
-  final _customStorageController = TextEditingController();
 
-  String? _storagePlaceSelected;
-  bool _showCustomStorage = false;
-  String? _category;
+  // LookupValue IDs — resolved from LookupService
+  String? _categoryId;
+  String? _storageId;
+  bool _trackAsTask = false; // create/maintain a linked task
+  final _taskSubjectController = TextEditingController();
+  String? _taskActionId; // selected packing action LookupValue.id
   int _quantity = 1;
   PackingStatus _status = PackingStatus.notPacked;
-  List<PackingItemTask> _tasks = [];
   bool _isSaving = false;
-  String? _pendingStoragePlace; // holds raw DB value until l10n is ready
 
   bool get _isEditing => widget.item != null;
 
-  List<String> _packingCategories(AppLocalizations l) => [
-    l.packingCatClothing, l.packingCatToiletries, l.packingCatElectronics,
-    l.packingCatDocuments, l.packingCatMedication, l.packingCatFoodSnacks,
-    l.packingCatAccessories, l.packingCatSportOutdoor, l.packingCatBabyKids,
-    l.packingCatWorkOffice, l.packingCatOther,
-  ];
+  /// Resolve _categoryId to display string for DB storage (use value_key).
+  String? _resolvedCategory() {
+    if (_categoryId == null) return null;
+    final v = LookupService.instance.byId(LookupCategory.packingCategory, _categoryId!);
+    return v?.valueKey ?? v?.displayEn;
+  }
 
-  List<String> _storagePlaces(AppLocalizations l) => [
-    l.storageCheckin, l.storageHandLuggage, l.storageBackpack, l.storageToiletryBag,
-    l.storageLaptopBag, l.storageHandbag, l.storageWallet, l.storageMoneyBelt,
-    l.storageCarBoot, l.storageShippingBox, l.storageOther,
-  ];
-
+  /// Resolve _storageId to display string for DB storage (use value_key).
   String? _resolvedStoragePlace(AppLocalizations l) {
-    if (_showCustomStorage) {
-      final v = _customStorageController.text.trim();
-      return v.isEmpty ? null : v;
-    }
-    if (_storagePlaceSelected == null || _storagePlaceSelected == l.storageOther) return null;
-    return _storagePlaceSelected;
+    if (_storageId == null) return null;
+    final v = LookupService.instance.byId(LookupCategory.storageLocation, _storageId!);
+    return v?.valueKey ?? v?.displayEn;
   }
 
   @override
@@ -59,91 +54,88 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
     super.initState();
     if (_isEditing) {
       final item = widget.item!;
-      _nameController.text = item.name;
+      _nameController.text  = item.name;
       _notesController.text = item.notes ?? '';
-      _category = item.category;
       _quantity = item.quantity;
-      _status = item.status;
-      _tasks = List.from(item.tasks);
-      _pendingStoragePlace = item.storagePlace;
+      _status   = item.status;
+      // Resolve stored value_key → LookupValue.id
+      _categoryId = LookupService.instance
+          .resolve(LookupCategory.packingCategory, item.category)?.id;
+      _storageId  = LookupService.instance
+          .resolve(LookupCategory.storageLocation, item.storagePlace)?.id;
+      // Check if a linked task already exists and pre-fill subject
+      DatabaseHelper.instance.getTaskForPackingItem(widget.item!.id).then((task) {
+        if (mounted && task != null) {
+          setState(() {
+            _trackAsTask = true;
+            _taskSubjectController.text = task.name;
+          });
+        }
+      });
     }
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_pendingStoragePlace != null) {
-      final l = context.l;
-      final places = _storagePlaces(l);
-      if (places.contains(_pendingStoragePlace)) {
-        _storagePlaceSelected = _pendingStoragePlace;
-      } else {
-        _storagePlaceSelected = l.storageOther;
-        _showCustomStorage = true;
-        _customStorageController.text = _pendingStoragePlace!;
-      }
-      _pendingStoragePlace = null;
-    }
-  }
+
 
   @override
   void dispose() {
     _nameController.dispose(); _notesController.dispose();
-    _newTaskController.dispose(); _customStorageController.dispose();
+    _taskSubjectController.dispose();
     super.dispose();
   }
 
-  void _addTask() {
-    final text = _newTaskController.text.trim();
-    if (text.isEmpty) return;
-    setState(() {
-      _tasks.add(PackingItemTask(
-        id: const Uuid().v4(), packingItemId: widget.item?.id ?? '',
-        tripId: widget.tripId, description: text, createdAt: DateTime.now(),
-      ));
-      _newTaskController.clear();
-    });
-  }
-
-  void _removeTask(int index) => setState(() => _tasks.removeAt(index));
-
   Future<void> _save() async {
-    final l = context.l;
+    final l    = context.l;
+    final lang = LanguageService.instance.locale.languageCode;
+    final isHe = lang == 'he';
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSaving = true);
+    String? newId;
     try {
       final db = DatabaseHelper.instance;
       final now = DateTime.now();
       final storage = _resolvedStoragePlace(l);
+      final category = _resolvedCategory();
       if (_isEditing) {
         await db.updatePackingItem(widget.item!.copyWith(
-          name: _nameController.text.trim(), category: _category,
+          name: _nameController.text.trim(), category: category,
           quantity: _quantity, storagePlace: storage, status: _status,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
         ));
-        final rawDb = await db.database;
-        await rawDb.delete('packing_item_tasks', where: 'packing_item_id = ?', whereArgs: [widget.item!.id]);
-        for (final task in _tasks) {
-          await db.insertPackingItemTask(PackingItemTask(
-            id: task.id, packingItemId: widget.item!.id, tripId: widget.tripId,
-            description: task.description, isDone: task.isDone, createdAt: task.createdAt,
-          ));
-        }
+
       } else {
-        final newId = const Uuid().v4();
+        newId = const Uuid().v4();
         await db.insertPackingItem(PackingItem(
           id: newId, tripId: widget.tripId, name: _nameController.text.trim(),
-          category: _category, quantity: _quantity, storagePlace: storage, status: _status,
+          category: category, quantity: _quantity, storagePlace: storage, status: _status,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
           createdAt: now,
         ));
-        for (final task in _tasks) {
-          await db.insertPackingItemTask(PackingItemTask(
-            id: task.id, packingItemId: newId, tripId: widget.tripId,
-            description: task.description, isDone: task.isDone, createdAt: task.createdAt,
-          ));
-        }
+
       }
+      // Handle track-as-task toggle
+      final savedItemId = _isEditing ? widget.item!.id : newId;
+      if (_trackAsTask) {
+        final action  = _taskActionId == null ? null
+            : LookupService.instance.byId(LookupCategory.packingAction, _taskActionId!);
+        final subject = _taskSubjectController.text.trim();
+        final itemName = _nameController.text.trim();
+        // Build task name: "Buy: Passport" / "Passport" (no action) / subject override
+        final taskName = subject.isNotEmpty
+            ? subject
+            : action != null
+                ? '${action.label(lang)}: $itemName'
+                : itemName;
+        await DatabaseHelper.instance.upsertPackingTask(
+          tripId: widget.tripId,
+          packingItemId: savedItemId ?? '',
+          itemName: taskName,
+        );
+      } else if (_isEditing) {
+        // User turned off tracking — remove linked task if it exists
+        await DatabaseHelper.instance.deleteTaskForPackingItem(widget.item!.id);
+      }
+
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
@@ -155,11 +147,9 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l;
-    final categories = _packingCategories(l);
-    final storagePlaces = _storagePlaces(l);
-    final catValue = categories.contains(_category) ? _category : null;
-    final storeValue = storagePlaces.contains(_storagePlaceSelected) ? _storagePlaceSelected : null;
+    final l    = context.l;
+    final lang = LanguageService.instance.locale.languageCode;
+    final isHe = lang == 'he';
 
     return Scaffold(
       appBar: AppBar(
@@ -187,11 +177,12 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
           const SizedBox(height: 16),
 
           _label(l.fieldCategory),
-          DropdownButtonFormField<String>(
-            value: catValue,
-            decoration: InputDecoration(hintText: l.packingSelectCategory, prefixIcon: const Icon(Icons.label_outline)),
-            items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-            onChanged: (v) => setState(() => _category = v),
+          _PackingLookupDropdown(
+            cat: LookupCategory.packingCategory,
+            selectedId: _categoryId,
+            hint: l.packingSelectCategory,
+            icon: Icons.label_outline,
+            onChanged: (id) => setState(() => _categoryId = id),
           ),
           const SizedBox(height: 16),
 
@@ -206,26 +197,13 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
           const SizedBox(height: 16),
 
           _label(l.fieldStoragePlace),
-          DropdownButtonFormField<String>(
-            value: storeValue,
-            decoration: InputDecoration(hintText: l.packingStoragePlaceHint, prefixIcon: const Icon(Icons.luggage_outlined)),
-            items: storagePlaces.map((p) => DropdownMenuItem(value: p, child: Text(p))).toList(),
-            onChanged: (v) {
-              setState(() {
-                _storagePlaceSelected = v;
-                _showCustomStorage = v == l.storageOther;
-                if (!_showCustomStorage) _customStorageController.clear();
-              });
-            },
+          _PackingLookupDropdown(
+            cat: LookupCategory.storageLocation,
+            selectedId: _storageId,
+            hint: l.packingStoragePlaceHint,
+            icon: Icons.luggage_outlined,
+            onChanged: (id) => setState(() => _storageId = id),
           ),
-          if (_showCustomStorage) ...[
-            const SizedBox(height: 10),
-            TextFormField(
-              controller: _customStorageController,
-              decoration: InputDecoration(hintText: l.packingCustomStorageHint, prefixIcon: const Icon(Icons.edit_outlined)),
-              autofocus: true,
-            ),
-          ],
           const SizedBox(height: 16),
 
           if (_isEditing) ...[
@@ -246,35 +224,109 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
           TextFormField(controller: _notesController, maxLines: 2,
             decoration: InputDecoration(hintText: l.packingNotesHint,
               prefixIcon: const Icon(Icons.notes_outlined), alignLabelWithHint: true)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 16),
 
-          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text(l.packingItemTasksLabel, style: Theme.of(context).textTheme.headlineSmall),
-            Text(l.packingItemTasksHint, style: Theme.of(context).textTheme.bodySmall),
-          ]),
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: TextFormField(controller: _newTaskController,
-              decoration: InputDecoration(hintText: l.packingAddTaskHint, prefixIcon: const Icon(Icons.add_task_outlined)),
-              onFieldSubmitted: (_) => _addTask())),
-            const SizedBox(width: 10),
-            ElevatedButton(onPressed: _addTask,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                backgroundColor: TripReadyTheme.teal),
-              child: const Icon(Icons.add, color: Colors.white)),
-          ]),
-          if (_tasks.isNotEmpty) ...[
-            const SizedBox(height: 12),
-            ..._tasks.asMap().entries.map((e) => _TaskInputRow(
-              task: e.value,
-              onRemove: () => _removeTask(e.key),
-              onToggle: () => setState(() {
-                _tasks[e.key] = _tasks[e.key].copyWith(isDone: !_tasks[e.key].isDone);
-              }),
-            )),
-          ],
+          // ── Track as Task ─────────────────────────────────────
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: _trackAsTask
+                  ? TripReadyTheme.teal.withOpacity(0.06)
+                  : TripReadyTheme.warmGrey.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _trackAsTask
+                    ? TripReadyTheme.teal.withOpacity(0.3)
+                    : Colors.transparent,
+              ),
+            ),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              // Header row — toggle
+              Row(children: [
+                Icon(Icons.task_alt_outlined,
+                    size: 20,
+                    color: _trackAsTask ? TripReadyTheme.teal : TripReadyTheme.textMid),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(
+                    isHe ? 'מעקב כמשימה' : 'Track as Task',
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: _trackAsTask ? TripReadyTheme.teal : TripReadyTheme.textDark,
+                    ),
+                  ),
+                  Text(
+                    isHe
+                        ? 'הצג פריט זה בלשונית משימות למעקב'
+                        : 'Show this item in the Tasks tab for follow-up',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: TripReadyTheme.textMid,
+                    ),
+                  ),
+                ])),
+                Switch(
+                  value: _trackAsTask,
+                  activeColor: TripReadyTheme.teal,
+                  onChanged: (v) => setState(() {
+                    _trackAsTask = v;
+                    if (!v) {
+                      _taskActionId = null;
+                      _taskSubjectController.clear();
+                    }
+                  }),
+                ),
+              ]),
 
+              // Expanded inline task setup — shown when toggle is on
+              if (_trackAsTask) ...[
+                const SizedBox(height: 12),
+                const Divider(height: 1),
+                const SizedBox(height: 12),
+
+                // Action dropdown
+                Text(
+                  isHe ? 'פעולה' : 'Action',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: TripReadyTheme.textMid),
+                ),
+                const SizedBox(height: 6),
+                _PackingLookupDropdown(
+                  cat: LookupCategory.packingAction,
+                  selectedId: _taskActionId,
+                  hint: isHe ? 'בחר פעולה (אופציונלי)' : 'Select action (optional)',
+                  icon: Icons.bolt_outlined,
+                  onChanged: (id) => setState(() => _taskActionId = id),
+                ),
+                const SizedBox(height: 12),
+
+                // Subject override field
+                Text(
+                  isHe ? 'נושא המשימה' : 'Task subject',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: TripReadyTheme.textMid),
+                ),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _taskSubjectController,
+                  decoration: InputDecoration(
+                    hintText: isHe
+                        ? 'כברירת מחדל: פעולה + שם הפריט'
+                        : 'Default: action + item name',
+                    prefixIcon: const Icon(Icons.edit_outlined),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  isHe
+                      ? 'השאר ריק לשימוש בפעולה ושם הפריט אוטומטית'
+                      : 'Leave empty to auto-build from action and item name',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: TripReadyTheme.textMid,
+                      fontStyle: FontStyle.italic),
+                ),
+              ],
+            ]),
+          ),
           const SizedBox(height: 40),
           ElevatedButton.icon(
             onPressed: _isSaving ? null : _save,
@@ -329,28 +381,52 @@ class _StatusToggle extends StatelessWidget {
       ])));
 }
 
-class _TaskInputRow extends StatelessWidget {
-  final PackingItemTask task;
-  final VoidCallback onRemove;
-  final VoidCallback onToggle;
-  const _TaskInputRow({required this.task, required this.onRemove, required this.onToggle});
+
+// ── Packing lookup dropdown ───────────────────────────────────────────────────
+
+class _PackingLookupDropdown extends StatelessWidget {
+  const _PackingLookupDropdown({
+    required this.cat,
+    required this.selectedId,
+    required this.hint,
+    required this.icon,
+    required this.onChanged,
+  });
+
+  final LookupCategory cat;
+  final String? selectedId;
+  final String hint;
+  final IconData icon;
+  final ValueChanged<String?> onChanged;
+
   @override
-  Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 8),
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-    decoration: BoxDecoration(
-      color: task.isDone ? TripReadyTheme.success.withOpacity(0.06) : TripReadyTheme.warmGrey.withOpacity(0.5),
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: task.isDone ? TripReadyTheme.success.withOpacity(0.3) : Colors.transparent)),
-    child: Row(children: [
-      GestureDetector(onTap: onToggle,
-        child: Icon(task.isDone ? Icons.check_circle : Icons.radio_button_unchecked,
-          color: task.isDone ? TripReadyTheme.success : TripReadyTheme.textLight, size: 20)),
-      const SizedBox(width: 10),
-      Expanded(child: Text(task.description, style: TextStyle(
-        decoration: task.isDone ? TextDecoration.lineThrough : null,
-        color: task.isDone ? TripReadyTheme.textMid : TripReadyTheme.textDark, fontSize: 14))),
-      GestureDetector(onTap: onRemove,
-        child: const Icon(Icons.close, size: 18, color: TripReadyTheme.textLight)),
-    ]));
+  Widget build(BuildContext context) {
+    final lang   = LanguageService.instance.locale.languageCode;
+    final values = LookupService.instance.enabled(cat);
+    final currentId = values.any((v) => v.id == selectedId)
+        ? selectedId
+        : null;
+
+    return DropdownButtonFormField<String>(
+      value: currentId,
+      decoration: InputDecoration(
+        hintText: hint,
+        prefixIcon: Icon(icon),
+      ),
+      items: [
+        DropdownMenuItem<String>(
+          value: null,
+          child: Text(hint,
+              style: TextStyle(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withOpacity(0.4))),
+        ),
+        ...values.map((v) =>
+            DropdownMenuItem(value: v.id, child: Text(v.label(lang)))),
+      ],
+      onChanged: onChanged,
+    );
+  }
 }

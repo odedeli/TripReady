@@ -1,3 +1,4 @@
+import 'package:uuid/uuid.dart';
 import '../models/trip_details.dart';
 import 'database_helper.dart';
 
@@ -38,6 +39,88 @@ extension TripDetailsDatabase on DatabaseHelper {
       {'status': status.name},
       where: 'id = ?',
       whereArgs: [taskId],
+    );
+  }
+
+  /// Find the task linked to a packing item (source == packing).
+  Future<TripTask?> getTaskForPackingItem(String packingItemId) async {
+    final db = await database;
+    final rows = await db.query(
+      'tasks',
+      where: 'source = ? AND source_id = ?',
+      whereArgs: ['packing', packingItemId],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return TripTask.fromMap(rows.first);
+  }
+
+  /// Find all packing-sourced tasks for a trip.
+  Future<List<TripTask>> getPackingTasks(String tripId) async {
+    final db = await database;
+    final rows = await db.query(
+      'tasks',
+      where: 'trip_id = ? AND source = ?',
+      whereArgs: [tripId, 'packing'],
+      orderBy: 'created_at ASC',
+    );
+    return rows.map((r) => TripTask.fromMap(r)).toList();
+  }
+
+  /// Create a task linked to a packing item, or update it if one already exists.
+  Future<TripTask> upsertPackingTask({
+    required String tripId,
+    required String packingItemId,
+    required String itemName,
+  }) async {
+    final existing = await getTaskForPackingItem(packingItemId);
+    if (existing != null) {
+      // Update name in case it was renamed
+      final updated = existing.copyWith(name: itemName);
+      await updateTask(updated);
+      return updated;
+    }
+    final task = TripTask(
+      id: const Uuid().v4(),
+      tripId: tripId,
+      name: itemName,
+      status: TaskStatus.pending,
+      createdAt: DateTime.now(),
+      source: TaskSource.packing,
+      sourceId: packingItemId,
+    );
+    await insertTask(task);
+    return task;
+  }
+
+  /// Sync packing item packed status → linked task status.
+  /// packed = true  →  task done
+  /// packed = false →  task pending
+  Future<void> syncTaskFromPacking(String packingItemId, bool isPacked) async {
+    final task = await getTaskForPackingItem(packingItemId);
+    if (task == null) return;
+    final newStatus = isPacked ? TaskStatus.done : TaskStatus.pending;
+    await setTaskStatus(task.id, newStatus);
+  }
+
+  /// Sync task done status → linked packing item packed status.
+  Future<void> syncPackingFromTask(String packingItemId, bool isDone) async {
+    final db = await database;
+    await db.update(
+      'packing_items',
+      {'status': isDone ? 'packed' : 'notPacked'},
+      where: 'id = ?',
+      whereArgs: [packingItemId],
+    );
+  }
+
+  /// Delete the task linked to a packing item (called when packing item is deleted).
+  Future<void> deleteTaskForPackingItem(String packingItemId) async {
+    final db = await database;
+    await db.delete(
+      'tasks',
+      where: 'source = ? AND source_id = ?',
+      whereArgs: ['packing', packingItemId],
     );
   }
 

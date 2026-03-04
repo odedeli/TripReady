@@ -9,6 +9,11 @@ import '../widgets/app_logo.dart';
 import '../widgets/watermark_scaffold.dart';
 import '../services/localization_ext.dart';
 import 'trip_detail_screen.dart';
+import 'packing/packing_list_screen.dart';
+import 'tasks/tasks_screen.dart';
+import 'receipts/receipts_screen.dart';
+import 'addresses/addresses_screen.dart';
+import 'documents/documents_screen.dart';
 import '../main.dart' show tabNotifier;
 
 class DashboardScreen extends StatefulWidget {
@@ -56,7 +61,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 onRefresh: _loadData,
                 child: _activeTrip == null
                     ? _NoActiveTripView(onGoToTrips: () => tabNotifier.value = 1)
-                    : _DashboardContent(trip: _activeTrip!, stats: _stats, totalExpenses: _totalExpenses, onOpenTrip: _openActiveTrip),
+                    : _DashboardContent(trip: _activeTrip!, stats: _stats, totalExpenses: _totalExpenses, onOpenTrip: _openActiveTrip, onReload: _loadData),
               ),
       ),
     );
@@ -91,8 +96,9 @@ class _DashboardContent extends StatelessWidget {
   final Map<String, int> stats;
   final double totalExpenses;
   final VoidCallback onOpenTrip;
+  final VoidCallback onReload;
 
-  const _DashboardContent({required this.trip, required this.stats, required this.totalExpenses, required this.onOpenTrip});
+  const _DashboardContent({required this.trip, required this.stats, required this.totalExpenses, required this.onOpenTrip, required this.onReload});
 
   @override
   Widget build(BuildContext context) {
@@ -101,7 +107,7 @@ class _DashboardContent extends StatelessWidget {
     final daysUntil = trip.departureDate.difference(DateTime.now()).inDays;
     final daysLeft = trip.returnDate.difference(DateTime.now()).inDays;
 
-    final packingTotal = stats['packing_total'] ?? 0;
+    final packingTotal  = stats['packing_total']  ?? 0;
     final packingPacked = stats['packing_packed'] ?? 0;
     final packingPercent = packingTotal == 0 ? 0.0 : packingPacked / packingTotal;
     final tasksTotal = stats['tasks_total'] ?? 0;
@@ -145,7 +151,7 @@ class _DashboardContent extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.place_outlined, size: 14, color: Colors.white60),
                 const SizedBox(width: 4),
-                Text(trip.country != null ? '${trip.destination}, ${trip.country}' : trip.destination, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                Text(trip.countryDisplay != null ? '${trip.destination}, ${trip.countryDisplay}' : trip.destination, style: const TextStyle(color: Colors.white70, fontSize: 14)),
               ]),
               const SizedBox(height: 16),
               Row(children: [
@@ -163,57 +169,130 @@ class _DashboardContent extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        SectionHeader(title: l.dashboardPackingProgress),
-        Row(children: [
-          Expanded(child: _ProgressCard(title: l.dashboardPacked, icon: Icons.backpack_outlined, done: packingPacked, total: packingTotal, percent: packingPercent, color: TripReadyTheme.teal)),
-          const SizedBox(width: 12),
-          Expanded(child: _ProgressCard(title: l.dashboardTasksDone, icon: Icons.task_alt_outlined, done: tasksDone, total: tasksTotal, percent: tasksPercent, color: TripReadyTheme.success)),
-        ]),
-        const SizedBox(height: 24),
+        // ── Combined overview section ──────────────────────────
         SectionHeader(title: l.tripDetailOverview),
+        // Row 1 — packing progress + task progress (tappable, double-tap or single tap)
         Row(children: [
-          Expanded(child: StatCard(icon: Icons.place_outlined, label: l.addressesTitle, value: '${stats['address_count'] ?? 0}', accentColor: TripReadyTheme.navy)),
+          Expanded(child: _TappableProgressCard(
+            title: l.dashboardPacked, icon: Icons.backpack_outlined,
+            done: packingPacked, total: packingTotal, percent: packingPercent, color: TripReadyTheme.teal,
+            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => PackingListScreen(trip: trip))); onReload(); },
+          )),
           const SizedBox(width: 12),
-          Expanded(child: StatCard(icon: Icons.receipt_outlined, label: l.receiptsTitle, value: '${stats['receipt_count'] ?? 0}', accentColor: TripReadyTheme.amber)),
+          Expanded(child: _TappableProgressCard(
+            title: l.dashboardTasksDone, icon: Icons.task_alt_outlined,
+            done: tasksDone, total: tasksTotal, percent: tasksPercent, color: TripReadyTheme.success,
+            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => TasksScreen(trip: trip))); onReload(); },
+          )),
+        ]),
+        const SizedBox(height: 12),
+        // Row 2 — expenses (receipts + total) + addresses + documents
+        Row(children: [
+          Expanded(child: _TappableStatCard(
+            icon: Icons.payments_outlined, label: l.dashboardExpenses,
+            line1: '${stats['receipt_count'] ?? 0} / \$${totalExpenses == 0 ? '0' : totalExpenses.toStringAsFixed(0)}',
+            accentColor: TripReadyTheme.textMid,
+            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => ReceiptsScreen(trip: trip))); onReload(); },
+          )),
           const SizedBox(width: 12),
-          Expanded(child: StatCard(icon: Icons.payments_outlined, label: l.dashboardExpenses, value: '\$${totalExpenses.toStringAsFixed(0)}', accentColor: TripReadyTheme.danger)),
+          Expanded(child: _TappableStatCard(
+            icon: Icons.place_outlined, label: l.addressesTitle,
+            line1: '${stats['address_count'] ?? 0}',
+            accentColor: TripReadyTheme.textMid,
+            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => AddressesScreen(trip: trip))); onReload(); },
+          )),
+          const SizedBox(width: 12),
+          Expanded(child: _TappableStatCard(
+            icon: Icons.attach_file_outlined, label: l.documentsTitle,
+            line1: '${stats['document_count'] ?? 0}',
+            accentColor: TripReadyTheme.textMid,
+            onTap: () async { await Navigator.push(context, MaterialPageRoute(builder: (_) => DocumentsScreen(trip: trip))); onReload(); },
+          )),
         ]),
         const SizedBox(height: 24),
-        OutlinedButton.icon(onPressed: onOpenTrip, icon: const Icon(Icons.open_in_new), label: Text(l.tripDetailSections)),
+        ElevatedButton.icon(onPressed: onOpenTrip, icon: const Icon(Icons.open_in_new), label: Text(l.tripDetailSections)),
         const SizedBox(height: 40),
       ],
     );
   }
 }
 
-class _ProgressCard extends StatelessWidget {
+class _TappableProgressCard extends StatelessWidget {
   final String title;
   final IconData icon;
-  final int done;
-  final int total;
+  final int done, total;
   final double percent;
   final Color color;
+  final VoidCallback onTap;
 
-  const _ProgressCard({required this.title, required this.icon, required this.done, required this.total, required this.percent, required this.color});
+  const _TappableProgressCard({required this.title, required this.icon, required this.done,
+      required this.total, required this.percent, required this.color, required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    onDoubleTap: onTap,
+    child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(color: TripReadyTheme.cardBg, borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: TripReadyTheme.navy.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4))]),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Row(children: [Icon(icon, size: 18, color: color), const SizedBox(width: 6), Text(title, style: Theme.of(context).textTheme.titleSmall)]),
+        Row(children: [Icon(icon, size: 18, color: TripReadyTheme.textMid), const SizedBox(width: 6),
+          Expanded(child: Text(title, style: Theme.of(context).textTheme.titleSmall)),
+          Icon(Icons.chevron_right, size: 14, color: TripReadyTheme.textLight),
+        ]),
         const SizedBox(height: 12),
         Center(child: CircularPercentIndicator(
-          radius: 48, lineWidth: 8,
+          radius: 44, lineWidth: 7,
           percent: percent.clamp(0.0, 1.0),
-          center: Text(total == 0 ? '—' : '${(percent * 100).round()}%', style: Theme.of(context).textTheme.titleMedium),
-          progressColor: color, backgroundColor: color.withOpacity(0.12), circularStrokeCap: CircularStrokeCap.round,
+          center: Text(total == 0 ? '—' : '${(percent * 100).round()}%',
+              style: Theme.of(context).textTheme.titleMedium),
+          progressColor: color, backgroundColor: color.withOpacity(0.12),
+          circularStrokeCap: CircularStrokeCap.round,
         )),
-        const SizedBox(height: 12),
-        Center(child: Text(total == 0 ? '—' : '$done / $total', style: Theme.of(context).textTheme.bodySmall)),
+        const SizedBox(height: 10),
+        Center(child: Text(total == 0 ? '—' : '$done / $total',
+            style: Theme.of(context).textTheme.bodySmall)),
       ]),
-    );
-  }
+    ),
+  );
+}
+
+class _TappableStatCard extends StatelessWidget {
+  final IconData icon;
+  final String label, line1;
+  final Color accentColor;
+  final VoidCallback onTap;
+
+  const _TappableStatCard({required this.icon, required this.label, required this.line1,
+      required this.accentColor, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    onDoubleTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: TripReadyTheme.cardBg, borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: TripReadyTheme.navy.withOpacity(0.08), blurRadius: 12, offset: const Offset(0, 4))]),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          Icon(icon, size: 18, color: TripReadyTheme.textMid),
+          const SizedBox(width: 6),
+          Expanded(child: Text(label, style: Theme.of(context).textTheme.titleSmall)),
+          Icon(Icons.chevron_right, size: 14, color: TripReadyTheme.textLight),
+        ]),
+        const SizedBox(height: 12),
+        Center(child: Text(
+          line1,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            color: TripReadyTheme.textDark,
+            fontWeight: FontWeight.w700,
+          ),
+          textAlign: TextAlign.center,
+        )),
+        const SizedBox(height: 2),
+      ]),
+    ),
+  );
 }

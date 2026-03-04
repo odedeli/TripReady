@@ -1,3 +1,6 @@
+import '../data/countries.dart';
+import '../services/language_service.dart';
+
 enum TripStatus { planned, active, archived }
 enum TripType { leisure, business, family, adventure, medical, other }
 enum TripPurpose { holiday, workTrip, familyVisit, conference, medical, other }
@@ -32,6 +35,19 @@ class Trip {
   });
 
   int get durationDays => returnDate.difference(departureDate).inDays + 1;
+
+  /// Human-readable country string with flag + localized name.
+  /// Resolves ISO codes ('IL' → '🇮🇱  ישראל' in Hebrew) and passes through
+  /// legacy plain-text values unchanged.
+  String? get countryDisplay {
+    if (country == null || country!.isEmpty) return null;
+    final resolved = countryByCode(country);
+    if (resolved != null) {
+      final lang = LanguageService.instance.locale.languageCode;
+      return resolved.localizedDisplay(lang);
+    }
+    return country; // legacy plain-text fallback
+  }
 
   bool get isActive => status == TripStatus.active;
   bool get isArchived => status == TripStatus.archived;

@@ -20,6 +20,7 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
   List<TripTask> _tasks = [];
   bool _isLoading = true;
   late TabController _tabController;
+  TaskSource? _sourceFilter; // null = all, task = manual only, packing = packing only
 
   @override
   void initState() { super.initState(); _tabController = TabController(length: 3, vsync: this); _load(); }
@@ -32,9 +33,15 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
     setState(() { _tasks = tasks; _isLoading = false; });
   }
 
-  List<TripTask> get _pending    => _tasks.where((t) => t.status == TaskStatus.pending).toList();
-  List<TripTask> get _inProgress => _tasks.where((t) => t.status == TaskStatus.inProgress).toList();
-  List<TripTask> get _done       => _tasks.where((t) => t.status == TaskStatus.done).toList();
+  List<TripTask> get _filtered => _sourceFilter == null
+      ? _tasks
+      : _tasks.where((t) => t.source == _sourceFilter).toList();
+
+  List<TripTask> get _pending    => _filtered.where((t) => t.status == TaskStatus.pending).toList();
+  List<TripTask> get _inProgress => _filtered.where((t) => t.status == TaskStatus.inProgress).toList();
+  List<TripTask> get _done       => _filtered.where((t) => t.status == TaskStatus.done).toList();
+
+  bool get _hasPackingTasks => _tasks.any((t) => t.isFromPacking);
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +51,7 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
     return Scaffold(
       appBar: AppBar(
         title: Text(l.tasksTitle),
+        actions: [HomeButton()],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: TripReadyTheme.amber,
@@ -62,6 +70,10 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
           ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
           : Column(children: [
               if (_tasks.isNotEmpty) _TaskProgressBar(done: _done.length, total: _tasks.length),
+              if (_hasPackingTasks) _SourceFilterBar(
+                selected: _sourceFilter,
+                onChanged: (s) => setState(() => _sourceFilter = s),
+              ),
               Expanded(child: TabBarView(controller: _tabController, children: [
                 _TaskList(tasks: _pending, isArchived: isArchived,
                   emptyTitle: l.tasksNoPending, emptySubtitle: isArchived ? l.archiveNoTripsSubtitle : l.tasksAddTask,
@@ -96,6 +108,10 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
 
   Future<void> _changeStatus(TripTask task, TaskStatus status) async {
     await DatabaseHelper.instance.setTaskStatus(task.id, status);
+    // Two-way sync: if this is a packing task, update the packing item too
+    if (task.isFromPacking && task.sourceId != null) {
+      await DatabaseHelper.instance.syncPackingFromTask(task.sourceId!, status == TaskStatus.done);
+    }
     _load();
   }
 }
@@ -201,9 +217,27 @@ class _TaskCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(task.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                decoration: task.isDone ? TextDecoration.lineThrough : null,
-                color: task.isDone ? TripReadyTheme.textMid : null)),
+              Row(children: [
+                if (task.isFromPacking) ...[
+                  Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: TripReadyTheme.teal.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.luggage_outlined, size: 10, color: TripReadyTheme.teal),
+                      const SizedBox(width: 3),
+                      Text('PACKING', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800,
+                          color: TripReadyTheme.teal, letterSpacing: 0.5)),
+                    ]),
+                  ),
+                ],
+                Expanded(child: Text(task.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  decoration: task.isDone ? TextDecoration.lineThrough : null,
+                  color: task.isDone ? TripReadyTheme.textMid : null))),
+              ]),
               if (task.dueDate != null) ...[
                 const SizedBox(height: 4),
                 Row(children: [
@@ -262,6 +296,66 @@ class _TaskCard extends StatelessWidget {
               ),
             ],
           ]),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Source filter bar ────────────────────────────────────────────────────────
+
+class _SourceFilterBar extends StatelessWidget {
+  final TaskSource? selected;
+  final ValueChanged<TaskSource?> onChanged;
+  const _SourceFilterBar({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    return Container(
+      color: TripReadyTheme.cardBg,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      child: Row(children: [
+        _chip(context, label: 'All', icon: Icons.list_outlined,
+            active: selected == null, color: primary,
+            onTap: () => onChanged(null)),
+        const SizedBox(width: 8),
+        _chip(context, label: 'Tasks', icon: Icons.task_outlined,
+            active: selected == TaskSource.task, color: TripReadyTheme.amber,
+            onTap: () => onChanged(selected == TaskSource.task ? null : TaskSource.task)),
+        const SizedBox(width: 8),
+        _chip(context, label: 'Packing', icon: Icons.luggage_outlined,
+            active: selected == TaskSource.packing, color: TripReadyTheme.teal,
+            onTap: () => onChanged(selected == TaskSource.packing ? null : TaskSource.packing)),
+      ]),
+    );
+  }
+
+  Widget _chip(BuildContext context, {
+    required String label, required IconData icon,
+    required bool active, required Color color, required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: active ? color.withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: active ? color : TripReadyTheme.warmGrey,
+            width: active ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(mainAxisSize: MainAxisSize.min, children: [
+          Icon(icon, size: 14, color: active ? color : TripReadyTheme.textMid),
+          const SizedBox(width: 5),
+          Text(label, style: TextStyle(
+            fontSize: 12, fontWeight: active ? FontWeight.w700 : FontWeight.w400,
+            color: active ? color : TripReadyTheme.textMid,
+          )),
         ]),
       ),
     );

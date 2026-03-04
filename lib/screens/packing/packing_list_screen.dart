@@ -7,6 +7,8 @@ import '../../models/packing.dart';
 import '../../models/trip.dart';
 import '../../database/database_helper.dart';
 import '../../database/packing_database.dart';
+import '../../database/trip_details_database.dart';
+import '../../models/trip_details.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
@@ -128,6 +130,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
     return AppBar(
       title: Text(l.packingTitle),
       actions: [
+        HomeButton(),
         IconButton(icon: const Icon(Icons.filter_list_outlined), onPressed: _showFilterSheet, tooltip: l.fieldCategory),
         PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert),
@@ -191,12 +194,22 @@ class _PackingListScreenState extends State<PackingListScreen> {
     if (result == true) _loadItems();
   }
 
-  Future<void> _toggleItem(PackingItem item) async { await DatabaseHelper.instance.togglePackingItemStatus(item); _loadItems(); }
+  Future<void> _toggleItem(PackingItem item) async {
+    await DatabaseHelper.instance.togglePackingItemStatus(item);
+    // Sync: if this item has a linked task, update its status too
+    final newlyPacked = !item.isPacked; // toggles, so invert current
+    await DatabaseHelper.instance.syncTaskFromPacking(item.id, newlyPacked);
+    _loadItems();
+  }
 
   Future<void> _deleteItem(PackingItem item) async {
     final l = context.l;
     final confirm = await showConfirmDialog(context, title: l.actionDelete, message: '"${item.name}"?', confirmLabel: l.actionDelete);
-    if (confirm == true) { await DatabaseHelper.instance.deletePackingItem(item.id); _loadItems(); }
+    if (confirm == true) {
+      await DatabaseHelper.instance.deleteTaskForPackingItem(item.id);
+      await DatabaseHelper.instance.deletePackingItem(item.id);
+      _loadItems();
+    }
   }
 
   Future<void> _bulkSetStatus(PackingStatus status) async {

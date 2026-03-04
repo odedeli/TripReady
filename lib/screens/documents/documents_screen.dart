@@ -56,7 +56,7 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
     final isArchived = widget.trip.isArchived;
 
     return Scaffold(
-      appBar: AppBar(title: Text(l.documentsTitle)),
+      appBar: AppBar(title: Text(l.documentsTitle), actions: [HomeButton()]),
       floatingActionButton: isArchived ? null : FloatingActionButton.extended(
         onPressed: _addDocument, icon: const Icon(Icons.attach_file), label: Text(l.documentsAddDocument)),
       body: _isLoading
