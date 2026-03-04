@@ -3,6 +3,10 @@ import 'package:intl/intl.dart';
 import '../models/trip.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_logo.dart';
+import '../widgets/watermark_scaffold.dart';
+import '../widgets/app_logo.dart';
+import '../widgets/watermark_scaffold.dart';
 import '../widgets/shared_widgets.dart';
 import '../services/localization_ext.dart';
 import 'add_edit_trip_screen.dart';
@@ -44,7 +48,8 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
     final l = context.l;
     return Scaffold(
       appBar: AppBar(
-        title: Text(l.tripsTitle),
+        title: AppLogo.whiteLandscape(height: 28),
+        centerTitle: true,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: TripReadyTheme.amber,
@@ -62,9 +67,10 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
         icon: const Icon(Icons.add),
         label: Text(l.tripsNewTrip),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
-          : TabBarView(controller: _tabController, children: [
+      body: WatermarkBody(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
+            : TabBarView(controller: _tabController, children: [
               _TripList(trips: _active, emptyIcon: Icons.flight_takeoff,
                 emptyTitle: l.dashboardNoActiveTrip,
                 emptySubtitle: l.dashboardStartPlanning,
@@ -79,6 +85,7 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
                 emptySubtitle: l.archiveNoTripsSubtitle,
                 onTripTap: _openTrip, onSetActive: _setActive, onArchive: _archiveTrip, onEdit: _editTrip, onDelete: _deleteTrip),
             ]),
+      ),
     );
   }
 

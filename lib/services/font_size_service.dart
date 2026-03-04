@@ -13,13 +13,12 @@ class FontSizeService extends ChangeNotifier {
   AppFontSize get size => _size;
 
   /// Scale multiplier applied to all font sizes in the theme.
-  /// small=0.88, normal=1.0, large=1.14
-  /// Chosen so large never breaks common layouts (< 2 lines in most labels).
+  /// small=0.82, normal=1.0, large=1.22
   double get scale {
     switch (_size) {
-      case AppFontSize.small:  return 0.88;
+      case AppFontSize.small:  return 0.82;
       case AppFontSize.normal: return 1.0;
-      case AppFontSize.large:  return 1.14;
+      case AppFontSize.large:  return 1.22;
     }
   }
 

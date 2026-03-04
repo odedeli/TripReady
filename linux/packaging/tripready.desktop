@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=TripReady
+Comment=Personal travel planner and task manager
+Exec=tripready
+Icon=tripready
+Terminal=false
+Type=Application
+Categories=Utility;Office;
+StartupWMClass=tripready

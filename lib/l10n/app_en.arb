@@ -371,5 +371,12 @@
   "settingsTextSize": "Text Size",
   "fontSmall": "Small",
   "fontNormal": "Normal",
-  "fontLarge": "Large"
+  "fontLarge": "Large",
+  "settingsColorTheme": "Color Theme",
+  "colorOceanDusk": "Ocean · Dusk",
+  "colorOceanMidnight": "Ocean · Midnight",
+  "colorAmberSunset": "Amber · Sunset",
+  "colorCobaltStorm": "Cobalt · Storm",
+  "colorGrassForest": "Grass · Forest",
+  "colorOrchidDusk": "Orchid · Dusk"
 }

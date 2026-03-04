@@ -300,6 +300,13 @@ abstract class AppLocalizations {
   String get fontSmall;
   String get fontNormal;
   String get fontLarge;
+  String get settingsColorTheme;
+  String get colorOceanDusk;
+  String get colorOceanMidnight;
+  String get colorAmberSunset;
+  String get colorCobaltStorm;
+  String get colorGrassForest;
+  String get colorOrchidDusk;
   String fieldExchangeRate(String currency);
   String dashboardDaysUntil(int days);
   String tripsDays(int count);
@@ -890,6 +897,20 @@ class _AppLocalizationsEn extends AppLocalizations {
   @override
   String get fontLarge => 'Large';
   @override
+  String get settingsColorTheme => 'Color Theme';
+  @override
+  String get colorOceanDusk => 'Ocean · Dusk';
+  @override
+  String get colorOceanMidnight => 'Ocean · Midnight';
+  @override
+  String get colorAmberSunset => 'Amber · Sunset';
+  @override
+  String get colorCobaltStorm => 'Cobalt · Storm';
+  @override
+  String get colorGrassForest => 'Grass · Forest';
+  @override
+  String get colorOrchidDusk => 'Orchid · Dusk';
+  @override
   String fieldExchangeRate(String currency) => 'Exchange Rate to ' + currency.toString() + '';
   @override
   String dashboardDaysUntil(int days) => '' + days.toString() + ' days until departure';
@@ -1471,6 +1492,20 @@ class _AppLocalizationsHe extends AppLocalizations {
   String get fontNormal => 'רגיל';
   @override
   String get fontLarge => 'גדול';
+  @override
+  String get settingsColorTheme => 'ערכת צבעים';
+  @override
+  String get colorOceanDusk => 'אוקיינוס · דמדומים';
+  @override
+  String get colorOceanMidnight => 'אוקיינוס · חצות';
+  @override
+  String get colorAmberSunset => 'ענבר · שקיעה';
+  @override
+  String get colorCobaltStorm => 'כחול · סערה';
+  @override
+  String get colorGrassForest => 'ירוק · יער';
+  @override
+  String get colorOrchidDusk => 'סחלב · דמדומים';
   @override
   String fieldExchangeRate(String currency) => 'שער חליפין ל' + currency.toString() + '';
   @override

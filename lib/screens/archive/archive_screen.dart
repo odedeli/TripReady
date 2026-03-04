@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../widgets/watermark_scaffold.dart';
+import '../../widgets/app_logo.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../../models/trip.dart';
@@ -31,16 +33,18 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   Widget build(BuildContext context) {
     final l = context.l;
     return Scaffold(
-      appBar: AppBar(title: Text(l.archiveTitle)),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
-          : _archived.isEmpty
-              ? EmptyState(icon: Icons.archive_outlined, title: l.archiveNoTrips, subtitle: l.archiveNoTripsSubtitle)
-              : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-                  itemCount: _archived.length,
-                  itemBuilder: (ctx, i) => _ArchivedTripCard(trip: _archived[i],
-                    onOpen: () => _openTrip(_archived[i]), onClone: () => _cloneTrip(_archived[i]), onDelete: () => _deleteTrip(_archived[i]))),
+      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true, actions: [Padding(padding: EdgeInsets.only(right: 12), child: Text('Archive', style: TextStyle(color: Colors.white70, fontSize: 13)))]),
+      body: WatermarkBody(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
+            : _archived.isEmpty
+                ? EmptyState(icon: Icons.archive_outlined, title: l.archiveNoTrips, subtitle: l.archiveNoTripsSubtitle)
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                    itemCount: _archived.length,
+                    itemBuilder: (ctx, i) => _ArchivedTripCard(trip: _archived[i],
+                      onOpen: () => _openTrip(_archived[i]), onClone: () => _cloneTrip(_archived[i]), onDelete: () => _deleteTrip(_archived[i]))),
+      ),
     );
   }
 

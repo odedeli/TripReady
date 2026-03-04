@@ -24,6 +24,7 @@ dependencies:
   url_launcher: ^6.3.0
   excel: ^4.0.6
   shared_preferences: ^2.3.2
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -32,3 +33,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/logos/TripReady_Logo_color_nocaption.svg
+    - assets/logos/TripReady_Logo_color.svg
+    - assets/logos/TripReady_Logo_color_landscape.svg
+    - assets/logos/TripReady_Logo_mono_nocaption.svg
+    - assets/logos/TripReady_Logo_mono.svg
+    - assets/logos/TripReady_Logo_mono_landscape.svg
+    - assets/logos/app_icon_512.png
+    - assets/logos/app_icon_192.png
+    - assets/logos/app_icon_mono_white.png

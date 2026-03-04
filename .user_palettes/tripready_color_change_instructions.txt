@@ -1,0 +1,199 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║          TripReady v1.2 — Manual Color Change Instructions                  ║
+║          Reference this alongside the Color Audit (.docx) and SVG mockup   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+HOW THE COLOR SYSTEM WORKS
+════════════════════════════
+TripReady has a two-layer color system:
+
+  LAYER 1 — AppColorPalette (lib/theme/color_palettes.dart)
+    • 25 named semantic slots per theme (primary, accent, background, etc.)
+    • Controls: Theme.of(context).colorScheme.* — these respond to theme switches
+    • To change a color for a specific theme variant, edit the relevant
+      AppColorPalette const in the AppPalettes class.
+
+  LAYER 2 — TripReadyTheme constants (lib/theme/app_theme.dart)
+    • Static const fallbacks still referenced directly in ~200 places in screens
+    • These do NOT respond to theme switching — they are always the same value
+    • Changing these affects EVERY theme simultaneously
+    • These will be migrated to colorScheme in a future pass (see Section 4)
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 1 — CHANGING A PALETTE COLOR (Theme-aware, recommended approach)
+════════════════════════════════════════════════════════════════════════════════
+
+File: lib/theme/color_palettes.dart
+
+1. Find the palette you want to change, e.g. `static const oceanDusk = AppColorPalette(`
+2. Find the slot you want to change, e.g. `primary: _Ocean.c600,`
+3. Replace the value with any Color from the Ambersky palette classes defined
+   at the top of color_palettes.dart (e.g. _Ocean, _Amber, _Cobalt, etc.)
+   OR use a raw hex value: `Color(0xFFxxxxxx)` (ARGB format, always start with FF)
+4. Save the file, run `flutter run`
+
+EXAMPLE — Change Ocean·Dusk primary from ocean-600 to ocean-500:
+  BEFORE:  primary: _Ocean.c600,
+  AFTER:   primary: _Ocean.c500,
+
+EXAMPLE — Use a custom hex:
+  BEFORE:  accent: _Amber.c300,
+  AFTER:   accent: const Color(0xFFF0A820),
+
+SLOTS YOU ARE MOST LIKELY TO WANT TO TWEAK:
+  primary       → main UI color (buttons, icons, progress bars, borders)
+  accent        → FAB, badge chips, countdown highlights
+  background    → scaffold background (visible behind cards)
+  navBg         → bottom navigation bar + AppBar background
+  navIndicator  → active nav tab indicator pill
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 2 — CHANGING DARK MODE COLORS
+════════════════════════════════════════════════════════════════════════════════
+
+Dark mode slots are prefixed `dark` in AppColorPalette:
+  darkPrimary, darkAccent, darkBackground, darkSurface, darkCard, darkBorder,
+  darkTextDark, darkTextMid, darkTextLight
+
+These are in the SAME palette const as the light slots. Edit them the same way.
+
+EXAMPLE — Make Ocean·Dusk dark mode use a lighter primary:
+  BEFORE:  darkPrimary: _Ocean.c400,
+  AFTER:   darkPrimary: _Ocean.c300,
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 3 — CHANGING SEMANTIC COLORS (success / danger / warning)
+════════════════════════════════════════════════════════════════════════════════
+
+These appear in EVERY palette (shared: block in color_palettes.dart) and also
+as static consts in app_theme.dart.
+
+In color_palettes.dart, each palette has:
+  success: Color(0xFF34A466),   → packed items, tasks done, confirm checkmark
+  warning: Color(0xFFDB9E3A),   → amber alias (rarely used directly)
+  danger:  Color(0xFFF23D61),   → delete buttons, reset actions, error states
+
+In app_theme.dart:
+  static const Color success = Color(0xFF34A466);
+  static const Color danger  = Color(0xFFF23D61);
+
+⚠️  Change BOTH locations to keep them in sync.
+
+RECOMMENDED: Keep danger (#F23D61, merlot-500) as-is — it's used for
+destructive actions and should always be attention-grabbing regardless of theme.
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 4 — CHANGING HARDCODED LEGACY COLORS (lib/theme/app_theme.dart)
+════════════════════════════════════════════════════════════════════════════════
+
+The TripReadyTheme class has these static const colors still used in screens:
+
+  teal       #257599  → used 60 times → maps to palette "primary"
+  textMid    #1B5976  → used 25 times → maps to palette "textMid"
+  danger     #F23D61  → used 24 times → keep as danger/accent for risky actions
+  textLight  #40B8EF  → used 23 times → maps to palette "textLight"
+  navy       #0A2F40  → used 19 times → maps to palette "navBg" / "textDark"
+  warmGrey   #B7E2FA  → used 13 times → maps to palette "border"
+  amber      #F7B750  → used 12 times → maps to palette "accent"
+  success    #34A466  → used 12 times → keep as success semantic
+
+TO CHANGE THESE GLOBALLY (affects all themes simultaneously):
+1. Open lib/theme/app_theme.dart
+2. Find the static const block at the top of TripReadyTheme class
+3. Update the hex value for the property you want to change
+
+EXAMPLE:
+  BEFORE:  static const Color teal = Color(0xFF257599);
+  AFTER:   static const Color teal = Color(0xFF267AAA);
+
+NOTE: Until screens are migrated to colorScheme, changing the palette
+alone won't affect places that use TripReadyTheme.teal directly.
+The full migration task (replacing ~200 references) is planned for v1.3.
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 5 — FIXING THE HARDCODED RECEIPT CATEGORY COLORS
+════════════════════════════════════════════════════════════════════════════════
+
+File: lib/screens/receipts/receipts_screen.dart
+
+Search for `_categoryColor` function (~line 175). These four colors are NOT
+from the Ambersky palette and should be replaced with palette equivalents:
+
+  Color(0xFFE67E22)  → Food         → Replace with: _Amber.c500   #B4812E
+  Color(0xFF8E44AD)  → Entertainment→ Replace with: _Orchid.c600  #922DCF
+  Color(0xFFE91E63)  → Shopping     → Replace with: _Merlot.c500  #F23D61 (or coral)
+  Color(0xFF2196F3)  → Communication→ Replace with: _Cobalt.c500  #6184EF
+
+Or use any other Ambersky shade you prefer. These colors are purely decorative
+category indicators and do not affect accessibility.
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 6 — ADDING A NEW PALETTE VARIANT
+════════════════════════════════════════════════════════════════════════════════
+
+1. Add a new value to AppColorTheme enum (lib/services/color_theme_service.dart):
+     cobaltStorm,
+     grassForest,
+     myNewTheme,   ← add here
+
+2. Add _fromString and _toString cases in the same file
+
+3. Add a new AppColorPalette const to AppPalettes class (color_palettes.dart):
+     static const myNewTheme = AppColorPalette(
+       name: 'MyTheme · Mood',
+       primary:    _Cobalt.c600,
+       ...fill all 25 slots...
+     );
+
+4. Add a fromTheme() case in AppPalettes.fromTheme()
+
+5. Add ARB key in lib/l10n/app_en.arb and app_he.arb:
+     "colorMyNewTheme": "MyTheme · Mood",
+
+6. Run: python lib/l10n/generate_localizations.py
+
+7. Add the option to _ColorThemeTile in settings_screen.dart
+
+════════════════════════════════════════════════════════════════════════════════
+SECTION 7 — FIGMA WORKFLOW
+════════════════════════════════════════════════════════════════════════════════
+
+The SVG file (tripready_ui_mockup.svg) can be imported into Figma:
+  File → Import (or drag-drop the .svg file)
+
+In Figma you can:
+  • Click any element to see its fill color in the right panel
+  • Use "Select All with Same Fill" to find all uses of a color
+  • Edit the fill, note the new hex, then apply to the appropriate
+    palette slot using the instructions above
+
+The SVG shows Ocean·Dusk light mode. To preview other palettes visually
+before implementing, use Figma's global color swap / style feature.
+
+COLOR NAMING MAP (Figma label → Dart property):
+  "primary"          → AppColorPalette.primary / TripReadyTheme.teal
+  "navBg / AppBar"   → AppColorPalette.navBg / TripReadyTheme.navy
+  "accent / FAB"     → AppColorPalette.accent / TripReadyTheme.amber
+  "background"       → AppColorPalette.background / TripReadyTheme.cream
+  "surface / card"   → AppColorPalette.surface / TripReadyTheme.cardBg
+  "border"           → AppColorPalette.border / TripReadyTheme.warmGrey
+  "text (primary)"   → AppColorPalette.textDark / TripReadyTheme.textDark
+  "text (secondary)" → AppColorPalette.textMid / TripReadyTheme.textMid
+  "text (disabled)"  → AppColorPalette.textLight / TripReadyTheme.textLight
+  "success"          → AppColorPalette.success / TripReadyTheme.success
+  "danger"           → AppColorPalette.danger / TripReadyTheme.danger
+  "navIndicator"     → AppColorPalette.navIndicator
+
+════════════════════════════════════════════════════════════════════════════════
+QUICK REFERENCE — FILE LOCATIONS
+════════════════════════════════════════════════════════════════════════════════
+
+  lib/theme/color_palettes.dart      → All 6 palette definitions (edit here)
+  lib/theme/app_theme.dart           → Legacy TripReadyTheme consts + ThemeData
+  lib/services/color_theme_service.dart → Enum and persistence
+  lib/screens/settings_screen.dart   → Settings UI (color selector tile)
+  lib/screens/receipts/receipts_screen.dart → Hardcoded category colors (line ~175)
+  lib/l10n/app_en.arb / app_he.arb  → Localised theme names
+  lib/l10n/generate_localizations.py → Run after editing ARB files
+
+════════════════════════════════════════════════════════════════════════════════

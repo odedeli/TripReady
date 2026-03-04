@@ -371,5 +371,12 @@
   "settingsTextSize": "גודל טקסט",
   "fontSmall": "קטן",
   "fontNormal": "רגיל",
-  "fontLarge": "גדול"
+  "fontLarge": "גדול",
+  "settingsColorTheme": "ערכת צבעים",
+  "colorOceanDusk": "אוקיינוס · דמדומים",
+  "colorOceanMidnight": "אוקיינוס · חצות",
+  "colorAmberSunset": "ענבר · שקיעה",
+  "colorCobaltStorm": "כחול · סערה",
+  "colorGrassForest": "ירוק · יער",
+  "colorOrchidDusk": "סחלב · דמדומים"
 }

@@ -5,6 +5,8 @@ import '../models/trip.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
 import '../widgets/shared_widgets.dart';
+import '../widgets/app_logo.dart';
+import '../widgets/watermark_scaffold.dart';
 import '../services/localization_ext.dart';
 import 'trip_detail_screen.dart';
 import '../main.dart' show tabNotifier;
@@ -41,19 +43,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final l = context.l;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TripReady'),
+        title: AppLogo.whiteLandscape(height: 28),
+        centerTitle: true,
         actions: [
           IconButton(icon: const Icon(Icons.refresh_outlined), onPressed: _loadData, tooltip: l.actionUpdate),
         ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
-          : RefreshIndicator(
-              onRefresh: _loadData,
-              child: _activeTrip == null
-                  ? _NoActiveTripView(onGoToTrips: () => tabNotifier.value = 1)
-                  : _DashboardContent(trip: _activeTrip!, stats: _stats, totalExpenses: _totalExpenses, onOpenTrip: _openActiveTrip),
-            ),
+      body: WatermarkBody(
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
+            : RefreshIndicator(
+                onRefresh: _loadData,
+                child: _activeTrip == null
+                    ? _NoActiveTripView(onGoToTrips: () => tabNotifier.value = 1)
+                    : _DashboardContent(trip: _activeTrip!, stats: _stats, totalExpenses: _totalExpenses, onOpenTrip: _openActiveTrip),
+              ),
+      ),
     );
   }
 
