@@ -4,6 +4,11 @@ on:
   release:
     types: [ published ]
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to attach artifacts to (e.g. v1.3.0). Leave empty to skip.'
+        required: false
+        default: ''
 
 # ── Permissions required to attach files to a release ─────────────────────────
 permissions:
@@ -63,9 +68,10 @@ jobs:
           retention-days: 30
 
       - name: Attach to GitHub release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
           files: build\windows\x64\runner\${{ env.ZIP_NAME }}
 
   # ── Linux ─────────────────────────────────────────────────────────────────────
@@ -182,9 +188,10 @@ jobs:
           retention-days: 30
 
       - name: Attach to GitHub release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
           files: |
             build/linux/x64/release/${{ env.TAR_NAME }}
             ${{ env.DEB_NAME }}
@@ -241,7 +248,8 @@ jobs:
           retention-days: 30
 
       - name: Attach to GitHub release
-        if: github.event_name == 'release'
+        if: github.event_name == 'release' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
           files: ${{ env.APK_NAME }}
