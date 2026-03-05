@@ -56,15 +56,15 @@ jobs:
         run: |
           $tag = "${{ steps.ver.outputs.tag }}"
           $zip = "TripReady_${tag}_Windows_x64.zip"
-          cd build\windows\x64\runner
-          Compress-Archive -Path Release -DestinationPath $zip
+          Compress-Archive -Path build\windows\x64\runner\Release -DestinationPath $zip
+          echo "ZIP_NAME=$zip" >> $env:GITHUB_OUTPUT
           echo "ZIP_NAME=$zip" >> $env:GITHUB_ENV
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Windows-zip
-          path: build\windows\x64\runner\${{ env.ZIP_NAME }}
+          path: ${{ env.ZIP_NAME }}
           retention-days: 30
 
       - name: Attach to GitHub release
@@ -72,7 +72,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
-          files: build\windows\x64\runner\${{ env.ZIP_NAME }}
+          files: ${{ env.ZIP_NAME }}
 
   # ── Linux ─────────────────────────────────────────────────────────────────────
   build-linux:
