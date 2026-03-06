@@ -14,6 +14,7 @@ import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
 import 'add_edit_packing_item_screen.dart';
 import 'template_dialogs.dart';
+import '../../services/app_notifier.dart';
 
 class PackingListScreen extends StatefulWidget {
   final Trip trip;
@@ -55,7 +56,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
   List<PackingItem> get _selectedItems => _items.where((i) => _selectedIds.contains(i.id)).toList();
 
   @override
-  void initState() { super.initState(); _loadItems(); }
+  void initState() { super.initState(); _loadItems(); 
+    AppNotifier.instance.addListener(_loadItems);
+  }
 
   Future<void> _loadItems() async {
     setState(() => _isLoading = true);
@@ -83,6 +86,12 @@ class _PackingListScreenState extends State<PackingListScreen> {
   List<String> get _availableCategories => _items.map((i) => i.category ?? '__uncategorised__').toSet().toList()..sort();
   int get _packedCount => _items.where((i) => i.isPacked).length;
   int get _totalCount  => _items.length;
+
+  @override
+  void dispose() {
+    AppNotifier.instance.removeListener(_loadItems);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +235,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
     final db = await DatabaseHelper.instance.database;
     await db.update('packing_items', {'status': status.name}, where: 'id IN (${selected.map((_) => '?').join(',')})', whereArgs: selected.map((i) => i.id).toList());
     _exitSelectMode(); _loadItems();
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${selected.length} $label')));
+    if (mounted) showAppSnackBar(context, '${selected.length} $label');
   }
 
   Future<void> _bulkDelete() async {
@@ -239,7 +248,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
     for (final item in selected) await db.delete('packing_item_tasks', where: 'packing_item_id = ?', whereArgs: [item.id]);
     await db.delete('packing_items', where: 'id IN (${selected.map((_) => '?').join(',')})', whereArgs: selected.map((i) => i.id).toList());
     _exitSelectMode(); _loadItems();
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${selected.length} ${l.actionDelete}')));
+    if (mounted) showAppSnackBar(context, '${selected.length} ${l.actionDelete}');
   }
 
   Future<void> _uncheckAll() async {
@@ -265,9 +274,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
 
   Future<void> _saveAsTemplate() async {
     final l = context.l;
-    if (_items.isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.packingNoItems))); return; }
+    if (_items.isEmpty) { showAppSnackBar(context, l.packingNoItems); return; }
     final result = await showDialog<bool>(context: context, builder: (_) => SaveTemplateDialog(items: _items));
-    if (result == true && mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.packingSaveTemplate)));
+    if (result == true && mounted) showAppSnackBar(context, l.packingSaveTemplate);
   }
 
   Future<void> _loadTemplate() async {
@@ -285,7 +294,7 @@ class _PackingListScreenState extends State<PackingListScreen> {
 
   Future<void> _exportExcel() async {
     final l = context.l;
-    if (_items.isEmpty) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.packingNoItems))); return; }
+    if (_items.isEmpty) { showAppSnackBar(context, l.packingNoItems); return; }
     try {
       final excel = Excel.createExcel();
       final sheet = excel['Packing List'];
@@ -307,9 +316,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
       final fileBytes = excel.encode();
       if (fileBytes == null) throw Exception('Excel encode failed');
       await File('${dir.path}/$filename').writeAsBytes(fileBytes);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${l.packingExportExcel}:\n${dir.path}/$filename'), duration: const Duration(seconds: 5)));
+      showAppSnackBar(context, '${l.packingExportExcel}:\n${dir.path}/$filename', duration: const Duration(seconds: 5));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) showAppSnackBar(context, '$e');
     }
   }
 
@@ -352,9 +361,9 @@ class _PackingListScreenState extends State<PackingListScreen> {
         imported++;
       }
       _loadItems();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${context.l.packingImportExcel}: $imported${skipped > 0 ? ', $skipped skipped' : ''}')));
+      if (mounted) showAppSnackBar(context, '${context.l.packingImportExcel}: $imported${skipped > 0 ? ', $skipped skipped' : ''}');
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) showAppSnackBar(context, '$e');
     }
   }
 

@@ -154,11 +154,9 @@ class _LookupListEditorState extends State<_LookupListEditor> {
   Future<void> _toggleEnabled(LookupValue v) async {
     // Prevent disabling the last enabled value
     if (v.isEnabled && LookupService.instance.enabled(widget.cat).length <= 1) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_isHe
-            ? 'חייב להישאר לפחות ערך אחד פעיל'
-            : 'At least one value must remain enabled'),
-      ));
+      showAppSnackBar(context, _isHe
+          ? 'חייב להישאר לפחות ערך אחד פעיל'
+          : 'At least one value must remain enabled');
       return;
     }
     await LookupService.instance.toggleEnabled(v);

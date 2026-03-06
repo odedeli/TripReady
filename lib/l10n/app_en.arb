@@ -65,6 +65,7 @@
   "tripsDeleteTrip": "Delete Trip",
   "tripsArchiveTrip": "Archive Trip",
   "tripsSetActive": "Set as Active",
+  "tripsSetPlanned": "Set as Planned",
   "tripsTripName": "Trip Name",
   "tripsDestination": "Destination",
   "tripsCountry": "Country",
@@ -243,6 +244,10 @@
   "archiveCloneTasksSubtitle": "All tasks (reset to pending)",
   "archiveCloneAddresses": "Addresses",
   "archiveCloneAddressesSubtitle": "Hotels, restaurants, landmarks",
+  "archiveCloneDates": "Trip Dates",
+  "archiveCloneDeparture": "Departure",
+  "archiveCloneReturn": "Return",
+  "archiveCloneOpenTrip": "Open New Trip",
   "settingsTitle": "Settings",
   "settingsDataManagement": "Data Management",
   "settingsExportBackup": "Export Backup",
@@ -378,5 +383,7 @@
   "colorAmberSunset": "Amber · Sunset",
   "colorCobaltStorm": "Cobalt · Storm",
   "colorGrassForest": "Grass · Forest",
-  "colorOrchidDusk": "Orchid · Dusk"
+  "colorOrchidDusk": "Orchid · Dusk",
+  "tripsAddDestination": "Add Destination",
+  "tripsDestinationHint": "e.g. Rome"
 }

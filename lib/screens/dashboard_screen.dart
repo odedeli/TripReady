@@ -15,6 +15,7 @@ import 'receipts/receipts_screen.dart';
 import 'addresses/addresses_screen.dart';
 import 'documents/documents_screen.dart';
 import '../main.dart' show tabNotifier;
+import '../services/app_notifier.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -29,7 +30,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
 
   @override
-  void initState() { super.initState(); _loadData(); }
+  void initState() { super.initState(); _loadData(); 
+    AppNotifier.instance.addListener(_loadData);
+  }
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
@@ -41,6 +44,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       expenses = await DatabaseHelper.instance.getTripTotalExpenses(trip.id);
     }
     setState(() { _activeTrip = trip; _stats = stats; _totalExpenses = expenses; _isLoading = false; });
+  }
+
+  @override
+  void dispose() {
+    AppNotifier.instance.removeListener(_loadData);
+    super.dispose();
   }
 
   @override
@@ -151,7 +160,7 @@ class _DashboardContent extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.place_outlined, size: 14, color: Colors.white60),
                 const SizedBox(width: 4),
-                Text(trip.countryDisplay != null ? '${trip.destination}, ${trip.countryDisplay}' : trip.destination, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                Text(trip.routeDisplay, style: const TextStyle(color: Colors.white70, fontSize: 14)),
               ]),
               const SizedBox(height: 16),
               Row(children: [

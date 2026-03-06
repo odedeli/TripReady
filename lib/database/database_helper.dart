@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import '../services/app_notifier.dart';
 import 'package:uuid/uuid.dart';
 import 'package:path/path.dart';
 import '../models/trip.dart';
@@ -21,7 +22,7 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
     return await openDatabase(
       path,
-      version: 4,
+      version: 7,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -34,6 +35,9 @@ class DatabaseHelper {
         name TEXT NOT NULL,
         destination TEXT NOT NULL,
         country TEXT,
+        return_destination TEXT,
+        return_country TEXT,
+        stops TEXT,
         departure_date TEXT NOT NULL,
         return_date TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'planned',
@@ -174,6 +178,21 @@ class DatabaseHelper {
       // Seed the new packingAction lookup category
       await _seedPackingActions(db);
     }
+    if (oldVersion < 5) {
+      // Add destinations column (superseded by v6 stops model — kept for safety)
+      await db.execute('ALTER TABLE trips ADD COLUMN destinations TEXT');
+    }
+    if (oldVersion < 6) {
+      // Route model: stops + return destination
+      await db.execute('ALTER TABLE trips ADD COLUMN return_destination TEXT');
+      await db.execute('ALTER TABLE trips ADD COLUMN return_country TEXT');
+      await db.execute('ALTER TABLE trips ADD COLUMN stops TEXT');
+    }
+    if (oldVersion < 7) {
+      // Maps: lat/lng on addresses
+      await db.execute('ALTER TABLE addresses ADD COLUMN latitude REAL');
+      await db.execute('ALTER TABLE addresses ADD COLUMN longitude REAL');
+    }
   }
 
   Future<void> _createLookupTable(Database db) async {
@@ -313,6 +332,7 @@ class DatabaseHelper {
     }
     await db.insert('trips', trip.toMap());
     return trip.id;
+     AppNotifier.instance.notify();
   }
 
   Future<List<Trip>> getAllTrips() async {
@@ -351,6 +371,18 @@ class DatabaseHelper {
       );
     }
     await db.update('trips', trip.toMap(), where: 'id = ?', whereArgs: [trip.id]);
+     AppNotifier.instance.notify();
+  }
+
+  Future<void> setTripPlanned(String tripId) async {
+    final db = await database;
+    await db.update(
+      'trips',
+      {'status': 'planned', 'updated_at': DateTime.now().toIso8601String()},
+      where: 'id = ?',
+      whereArgs: [tripId],
+    );
+    AppNotifier.instance.notify();
   }
 
   Future<void> setTripActive(String tripId) async {
@@ -362,6 +394,7 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [tripId],
     );
+     AppNotifier.instance.notify();
   }
 
   /// Wipes every table and re-creates the schema — full factory reset.
@@ -384,6 +417,7 @@ class DatabaseHelper {
         await txn.delete(table);
       }
     });
+     AppNotifier.instance.notify();
   }
 
   Future<void> archiveTrip(String tripId) async {
@@ -394,11 +428,13 @@ class DatabaseHelper {
       where: 'id = ?',
       whereArgs: [tripId],
     );
+     AppNotifier.instance.notify();
   }
 
   Future<void> deleteTrip(String tripId) async {
     final db = await database;
     await db.delete('trips', where: 'id = ?', whereArgs: [tripId]);
+     AppNotifier.instance.notify();
   }
 
   // ==================== TRIP STATS ====================

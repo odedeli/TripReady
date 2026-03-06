@@ -5,12 +5,11 @@ import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/watermark_scaffold.dart';
-import '../widgets/app_logo.dart';
-import '../widgets/watermark_scaffold.dart';
 import '../widgets/shared_widgets.dart';
 import '../services/localization_ext.dart';
 import 'add_edit_trip_screen.dart';
 import 'trip_detail_screen.dart';
+import '../services/app_notifier.dart';
 
 class TripsScreen extends StatefulWidget {
   const TripsScreen({super.key});
@@ -26,12 +25,14 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    _tabController = TabController(length: 2, vsync: this);
     _loadTrips();
+     AppNotifier.instance.addListener(_loadTrips);
   }
 
   @override
-  void dispose() { _tabController.dispose(); super.dispose(); }
+  void dispose() {
+    AppNotifier.instance.removeListener(_loadTrips); _tabController.dispose(); super.dispose(); }
 
   Future<void> _loadTrips() async {
     setState(() => _isLoading = true);
@@ -41,8 +42,6 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
 
   List<Trip> get _planned  => _trips.where((t) => t.status == TripStatus.planned).toList();
   List<Trip> get _active   => _trips.where((t) => t.status == TripStatus.active).toList();
-  List<Trip> get _archived => _trips.where((t) => t.status == TripStatus.archived).toList();
-
   @override
   Widget build(BuildContext context) {
     final l = context.l;
@@ -50,6 +49,13 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
       appBar: AppBar(
         title: AppLogo.whiteLandscape(height: 28),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_outlined),
+            tooltip: l.actionUpdate,
+            onPressed: _loadTrips,
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: TripReadyTheme.amber,
@@ -58,7 +64,6 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
           tabs: [
             Tab(text: '${l.tripsTabActive} (${_active.length})'),
             Tab(text: '${l.tripsTabPlanned} (${_planned.length})'),
-            Tab(text: '${l.tripsTabArchived} (${_archived.length})'),
           ],
         ),
       ),
@@ -71,19 +76,23 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
             : TabBarView(controller: _tabController, children: [
-              _TripList(trips: _active, emptyIcon: Icons.flight_takeoff,
-                emptyTitle: l.dashboardNoActiveTrip,
-                emptySubtitle: l.dashboardStartPlanning,
-                onTripTap: _openTrip, onSetActive: _setActive, onArchive: _archiveTrip, onEdit: _editTrip, onDelete: _deleteTrip),
-              _TripList(trips: _planned, emptyIcon: Icons.map_outlined,
-                emptyTitle: l.tripsNoTrips,
-                emptySubtitle: l.tripsNoTripsSubtitle,
-                buttonLabel: l.tripsAddTrip, onButtonPressed: _addTrip,
-                onTripTap: _openTrip, onSetActive: _setActive, onArchive: _archiveTrip, onEdit: _editTrip, onDelete: _deleteTrip),
-              _TripList(trips: _archived, emptyIcon: Icons.archive_outlined,
-                emptyTitle: l.archiveNoTrips,
-                emptySubtitle: l.archiveNoTripsSubtitle,
-                onTripTap: _openTrip, onSetActive: _setActive, onArchive: _archiveTrip, onEdit: _editTrip, onDelete: _deleteTrip),
+              RefreshIndicator(
+                color: TripReadyTheme.teal,
+                onRefresh: _loadTrips,
+                child: _TripList(trips: _active, emptyIcon: Icons.flight_takeoff,
+                  emptyTitle: l.dashboardNoActiveTrip,
+                  emptySubtitle: l.dashboardStartPlanning,
+                  onTripTap: _openTrip, onSetActive: _setActive, onSetPlanned: _setPlanned, onArchive: _archiveTrip, onEdit: _editTrip, onDelete: _deleteTrip),
+              ),
+              RefreshIndicator(
+                color: TripReadyTheme.teal,
+                onRefresh: _loadTrips,
+                child: _TripList(trips: _planned, emptyIcon: Icons.map_outlined,
+                  emptyTitle: l.tripsNoTrips,
+                  emptySubtitle: l.tripsNoTripsSubtitle,
+                  buttonLabel: l.tripsAddTrip, onButtonPressed: _addTrip,
+                  onTripTap: _openTrip, onSetActive: _setActive, onSetPlanned: _setPlanned, onArchive: _archiveTrip, onEdit: _editTrip, onDelete: _deleteTrip),
+              ),
             ]),
       ),
     );
@@ -107,7 +116,12 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
   Future<void> _setActive(Trip trip) async {
     await DatabaseHelper.instance.setTripActive(trip.id);
     _loadTrips();
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('"${trip.name}" ${context.l.tripsStatusActive}.')));
+    if (mounted) showAppSnackBar(context, '"${trip.name}" ${context.l.tripsStatusActive}.');
+  }
+
+  Future<void> _setPlanned(Trip trip) async {
+    await DatabaseHelper.instance.setTripPlanned(trip.id);
+    if (mounted) showAppSnackBar(context, '"${trip.name}" ${context.l.tripsStatusPlanned}.');
   }
 
   Future<void> _archiveTrip(Trip trip) async {
@@ -132,13 +146,14 @@ class _TripList extends StatelessWidget {
   final VoidCallback? onButtonPressed;
   final Function(Trip) onTripTap;
   final Function(Trip) onSetActive;
+  final Function(Trip) onSetPlanned;
   final Function(Trip) onArchive;
   final Function(Trip) onEdit;
   final Function(Trip) onDelete;
 
   const _TripList({required this.trips, required this.emptyIcon, required this.emptyTitle, required this.emptySubtitle,
     this.buttonLabel, this.onButtonPressed, required this.onTripTap, required this.onSetActive,
-    required this.onArchive, required this.onEdit, required this.onDelete});
+    required this.onSetPlanned, required this.onArchive, required this.onEdit, required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +163,7 @@ class _TripList extends StatelessWidget {
       itemCount: trips.length,
       itemBuilder: (ctx, i) => _TripCard(trip: trips[i],
         onTap: () => onTripTap(trips[i]), onSetActive: () => onSetActive(trips[i]),
+        onSetPlanned: () => onSetPlanned(trips[i]),
         onArchive: () => onArchive(trips[i]), onEdit: () => onEdit(trips[i]), onDelete: () => onDelete(trips[i])),
     );
   }
@@ -155,9 +171,9 @@ class _TripList extends StatelessWidget {
 
 class _TripCard extends StatelessWidget {
   final Trip trip;
-  final VoidCallback onTap, onSetActive, onArchive, onEdit, onDelete;
+  final VoidCallback onTap, onSetActive, onSetPlanned, onArchive, onEdit, onDelete;
 
-  const _TripCard({required this.trip, required this.onTap, required this.onSetActive, required this.onArchive, required this.onEdit, required this.onDelete});
+  const _TripCard({required this.trip, required this.onTap, required this.onSetActive, required this.onSetPlanned, required this.onArchive, required this.onEdit, required this.onDelete});
 
   Color get _statusColor {
     switch (trip.status) {
@@ -195,6 +211,7 @@ class _TripCard extends StatelessWidget {
                 icon: const Icon(Icons.more_vert, color: TripReadyTheme.textMid),
                 onSelected: (val) {
                   if (val == 'activate') onSetActive();
+                  if (val == 'set_planned') onSetPlanned();
                   if (val == 'edit') onEdit();
                   if (val == 'archive') onArchive();
                   if (val == 'delete') onDelete();
@@ -202,6 +219,8 @@ class _TripCard extends StatelessWidget {
                 itemBuilder: (_) => [
                   if (!trip.isActive && !trip.isArchived)
                     PopupMenuItem(value: 'activate', child: Text(l.tripsSetActive)),
+                  if (trip.isActive)
+                    PopupMenuItem(value: 'set_planned', child: Text(l.tripsSetPlanned)),
                   if (!trip.isArchived)
                     PopupMenuItem(value: 'edit', child: Text(l.tripsEditTrip)),
                   if (!trip.isArchived)
@@ -214,7 +233,7 @@ class _TripCard extends StatelessWidget {
             Row(children: [
               const Icon(Icons.place_outlined, size: 14, color: TripReadyTheme.teal),
               const SizedBox(width: 4),
-              Text(trip.countryDisplay != null ? '${trip.destination}, ${trip.countryDisplay}' : trip.destination,
+              Text(trip.routeDisplay,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: TripReadyTheme.teal, fontWeight: FontWeight.w500)),
             ]),
             const SizedBox(height: 6),

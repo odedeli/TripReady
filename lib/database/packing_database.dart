@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import '../services/app_notifier.dart';
 import '../models/packing.dart';
 import 'database_helper.dart';
 
@@ -33,6 +34,7 @@ extension PackingDatabase on DatabaseHelper {
   Future<void> insertPackingItem(PackingItem item) async {
     final db = await database;
     await db.insert('packing_items', item.toMap());
+     AppNotifier.instance.notify();
   }
 
   Future<void> updatePackingItem(PackingItem item) async {
@@ -43,11 +45,13 @@ extension PackingDatabase on DatabaseHelper {
       where: 'id = ?',
       whereArgs: [item.id],
     );
+     AppNotifier.instance.notify();
   }
 
   Future<void> deletePackingItem(String itemId) async {
     final db = await database;
     await db.delete('packing_items', where: 'id = ?', whereArgs: [itemId]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> togglePackingItemStatus(PackingItem item) async {
@@ -59,6 +63,7 @@ extension PackingDatabase on DatabaseHelper {
       where: 'id = ?',
       whereArgs: [item.id],
     );
+    AppNotifier.instance.notify();
   }
 
   // ==================== PACKING ITEM TASKS ====================
@@ -66,6 +71,7 @@ extension PackingDatabase on DatabaseHelper {
   Future<void> insertPackingItemTask(PackingItemTask task) async {
     final db = await database;
     await db.insert('packing_item_tasks', task.toMap());
+     AppNotifier.instance.notify();
   }
 
   Future<void> updatePackingItemTask(PackingItemTask task) async {
@@ -76,6 +82,7 @@ extension PackingDatabase on DatabaseHelper {
       where: 'id = ?',
       whereArgs: [task.id],
     );
+     AppNotifier.instance.notify();
   }
 
   Future<void> togglePackingTaskDone(PackingItemTask task) async {
@@ -86,11 +93,13 @@ extension PackingDatabase on DatabaseHelper {
       where: 'id = ?',
       whereArgs: [task.id],
     );
+    AppNotifier.instance.notify();
   }
 
   Future<void> deletePackingItemTask(String taskId) async {
     final db = await database;
     await db.delete('packing_item_tasks', where: 'id = ?', whereArgs: [taskId]);
+     AppNotifier.instance.notify();
   }
 
   // ==================== TEMPLATES ====================
@@ -121,11 +130,13 @@ extension PackingDatabase on DatabaseHelper {
       await db.insert('packing_template_items', item.toMap(),
           conflictAlgorithm: ConflictAlgorithm.replace);
     }
+    AppNotifier.instance.notify();
   }
 
   Future<void> deletePackingTemplate(String templateId) async {
     final db = await database;
     await db.delete('packing_templates', where: 'id = ?', whereArgs: [templateId]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> loadTemplateIntoTrip(String templateId, String tripId) async {

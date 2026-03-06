@@ -5,6 +5,7 @@ import '../../database/database_helper.dart';
 import '../../database/packing_database.dart';
 import '../../theme/app_theme.dart';
 import '../../services/localization_ext.dart';
+import '../../widgets/shared_widgets.dart';
 
 class SaveTemplateDialog extends StatefulWidget {
   final List<PackingItem> items;
@@ -39,8 +40,7 @@ class _SaveTemplateDialogState extends State<SaveTemplateDialog> {
       await DatabaseHelper.instance.savePackingTemplate(template);
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${context.l.templateErrorSaving}: $e')));
+      showAppSnackBar(context, '${context.l.templateErrorSaving}: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

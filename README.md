@@ -6,12 +6,13 @@ A personal travel planner for Windows, Linux, and Android — built with Flutter
 
 ## Features
 
-- **Trips** — Create and manage trips with status tracking (Active / Planned / Archived)
+- **Trips** — Create and manage trips with status tracking (Active / Planned / Archived). Multi-destination routes with departure, stops, and optional return destination.
 - **Packing Lists** — Per-trip packing with categories, storage places, quantities, and progress tracking. Import/export via Excel. Save and load reusable templates.
 - **Tasks** — Per-trip task manager with Pending / In Progress / Done workflow and due dates
 - **Expenses** — Receipt tracking with multi-currency support and category breakdowns
 - **Documents** — Attach and organise trip-related files (tickets, visas, vouchers, etc.)
-- **Addresses** — Save hotels, restaurants, landmarks and other locations per trip
+- **Addresses** — Save hotels, restaurants, landmarks and other locations per trip. Search and pin places on an interactive map. View all saved places on a map tab.
+- **Maps** — Interactive OSM-based maps across the app: address search and pin-drop, trip route overview, tap-to-add stops directly from the map.
 - **Dashboard** — At-a-glance overview of the active trip: packing progress, task progress, expenses summary
 - **Archive** — Clone past trips (optionally carrying over packing lists, tasks, and addresses)
 - **Backup & Restore** — Export and import a full local database backup
@@ -25,6 +26,7 @@ A personal travel planner for Windows, Linux, and Android — built with Flutter
 |---|---|
 | Framework | Flutter 3.41.2 / Dart 3.11.0 |
 | Database | SQLite via `sqflite` + `sqflite_common_ffi` |
+| Maps | `flutter_map` + OpenStreetMap tiles + Nominatim geocoding |
 | Localisation | Custom standalone `AppLocalizations` (no code generation) |
 | Fonts | Google Fonts — DM Sans + Playfair Display |
 | State | `ChangeNotifier` + `ValueNotifier` |
@@ -40,17 +42,19 @@ lib/
 ├── theme/
 │   └── app_theme.dart               # Colour palette, typography, shared theme
 ├── models/
-│   ├── trip.dart                    # Trip, TripType, TripPurpose, TripStatus enums
+│   ├── trip.dart                    # Trip, TripType, TripPurpose, TripStatus, TripStop
 │   ├── trip_details.dart            # TripTask, TripAddress, TripDocument, TaskStatus
 │   ├── packing.dart                 # PackingItem, PackingTask
 │   └── receipt.dart                 # Receipt, ReceiptType
 ├── database/
-│   ├── database_helper.dart         # Main SQLite helper — trips, tasks, addresses
+│   ├── database_helper.dart         # Main SQLite helper — trips, tasks, addresses (DB v7)
 │   ├── packing_database.dart        # Packing items and templates
 │   ├── receipt_database.dart        # Receipts and currency
 │   ├── trip_details_database.dart   # Documents
 │   └── backup_service.dart          # Export / import database backup
 ├── services/
+│   ├── geocoding_service.dart       # Nominatim forward/reverse geocoding
+│   ├── app_notifier.dart            # Global state change notifications
 │   ├── language_service.dart        # Locale state, persistence via shared_preferences
 │   └── localization_ext.dart        # BuildContext.l shorthand + re-export
 ├── l10n/
@@ -59,16 +63,19 @@ lib/
 │   ├── app_localizations.dart       # Generated localisation class (see below)
 │   └── generate_localizations.py   # Generator script — run after adding a language
 ├── widgets/
-│   └── shared_widgets.dart          # StatusBadge, EmptyState, StatCard, SectionHeader, etc.
+│   ├── shared_widgets.dart          # StatusBadge, EmptyState, StatCard, SectionHeader, etc.
+│   └── map_search_bar.dart          # Shared floating map search bar widget
 └── screens/
     ├── dashboard_screen.dart
     ├── trips_screen.dart
-    ├── trip_detail_screen.dart
-    ├── add_edit_trip_screen.dart
+    ├── trip_detail_screen.dart      # Includes _TripRouteMapScreen, _RouteChips
+    ├── add_edit_trip_screen.dart    # Form + Map tabs; _EditTripMapTab
     ├── settings_screen.dart
     ├── archive/archive_screen.dart
     ├── tasks/tasks_screen.dart
-    ├── addresses/addresses_screen.dart
+    ├── addresses/
+    │   ├── addresses_screen.dart    # List + Map tabs; _AddressesMapView
+    │   └── map_picker_screen.dart   # Full-screen pin picker (standalone)
     ├── documents/documents_screen.dart
     ├── receipts/receipts_screen.dart
     └── packing/
@@ -93,6 +100,28 @@ lib/
 flutter pub get
 flutter run -d windows
 ```
+
+---
+
+## Maps
+
+TripReady uses [flutter_map](https://pub.dev/packages/flutter_map) with OpenStreetMap tiles and the [Nominatim](https://nominatim.org/) geocoding API. No API key is required.
+
+### Map features
+
+| Feature | Location |
+|---|---|
+| Search for a place and save it with auto-filled details | Addresses → Add Address dialog |
+| View all saved places on a map | Addresses → Map tab |
+| Long-press map to drop a pin and add an address | Addresses → Map tab |
+| Search bar to pan the map | Addresses map tab, Trip Route map |
+| Trip route overview with polyline | Trip Detail → map button (🗺) |
+| Tap map to add a stop to the route | Trip Detail → map button → tap |
+| Map view while editing route | Add/Edit Trip → Map tab |
+
+### Network requirement
+
+Map tiles and geocoding require an internet connection. The rest of the app is fully offline.
 
 ---
 
@@ -203,5 +232,8 @@ Use the **Settings → Export Backup** option to save a copy of the SQLite datab
 
 | Version | Notes |
 |---|---|
-| 1.0.0 | Initial release — all core modules |
+| 1.4.0 | Maps integration (OSM/Nominatim), multi-destination route model, archive clone polish, Form/Map tabs in edit screens |
+| 1.3.0 | Packing ↔ Task integration, country picker i18n, customisable lookup tables, UX refinements |
+| 1.2.0 | Branding, colour themes, dark/light/auto mode, font size control |
 | 1.1.0 | Hebrew localisation, language selector, RTL support |
+| 1.0.0 | Initial release — all core modules |

@@ -9,6 +9,7 @@ import '../../services/lookup_service.dart';
 import '../../database/trip_details_database.dart';
 import '../../services/language_service.dart';
 import '../../models/lookup_value.dart';
+import '../../widgets/shared_widgets.dart';
 
 class AddEditPackingItemScreen extends StatefulWidget {
   final String tripId;
@@ -138,8 +139,7 @@ class _AddEditPackingItemScreenState extends State<AddEditPackingItemScreen> {
 
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${context.l.packingErrorSaving}: $e')));
+      showAppSnackBar(context, '${context.l.packingErrorSaving}: $e');
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }

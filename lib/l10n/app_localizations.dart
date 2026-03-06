@@ -70,9 +70,12 @@ abstract class AppLocalizations {
   String get tripsEditTrip;
   String get tripsDeleteTrip;
   String get tripsArchiveTrip;
+  String get tripsSetPlanned;
   String get tripsSetActive;
   String get tripsTripName;
   String get tripsDestination;
+  String get tripsAddDestination;
+  String get tripsDestinationHint;
   String get tripsCountry;
   String get tripsTripType;
   String get tripsTripPurpose;
@@ -195,6 +198,10 @@ abstract class AppLocalizations {
   String get archiveCloneTasksSubtitle;
   String get archiveCloneAddresses;
   String get archiveCloneAddressesSubtitle;
+  String get archiveCloneDates;
+  String get archiveCloneDeparture;
+  String get archiveCloneReturn;
+  String get archiveCloneOpenTrip;
   String get settingsTitle;
   String get settingsDataManagement;
   String get settingsExportBackup;
@@ -437,11 +444,17 @@ class _AppLocalizationsEn extends AppLocalizations {
   @override
   String get tripsArchiveTrip => 'Archive Trip';
   @override
+  String get tripsSetPlanned => 'Set as Planned';
+  @override
   String get tripsSetActive => 'Set as Active';
   @override
   String get tripsTripName => 'Trip Name';
   @override
   String get tripsDestination => 'Destination';
+  @override
+  String get tripsAddDestination => 'Add Destination';
+  @override
+  String get tripsDestinationHint => 'e.g. Rome';
   @override
   String get tripsCountry => 'Country';
   @override
@@ -686,6 +699,14 @@ class _AppLocalizationsEn extends AppLocalizations {
   String get archiveCloneAddresses => 'Addresses';
   @override
   String get archiveCloneAddressesSubtitle => 'Hotels, restaurants, landmarks';
+  @override
+  String get archiveCloneDates => 'Trip Dates';
+  @override
+  String get archiveCloneDeparture => 'Departure';
+  @override
+  String get archiveCloneReturn => 'Return';
+  @override
+  String get archiveCloneOpenTrip => 'Open New Trip';
   @override
   String get settingsTitle => 'Settings';
   @override
@@ -1033,11 +1054,17 @@ class _AppLocalizationsHe extends AppLocalizations {
   @override
   String get tripsArchiveTrip => 'העבר לארכיון';
   @override
+  String get tripsSetPlanned => 'העבר לתכנון';
+  @override
   String get tripsSetActive => 'הגדר כפעילה';
   @override
   String get tripsTripName => 'שם הנסיעה';
   @override
   String get tripsDestination => 'יעד';
+  @override
+  String get tripsAddDestination => 'הוסף יעד';
+  @override
+  String get tripsDestinationHint => 'לדוגמה: רומא';
   @override
   String get tripsCountry => 'מדינה';
   @override
@@ -1282,6 +1309,14 @@ class _AppLocalizationsHe extends AppLocalizations {
   String get archiveCloneAddresses => 'כתובות';
   @override
   String get archiveCloneAddressesSubtitle => 'מלונות, מסעדות, אתרי תיירות';
+  @override
+  String get archiveCloneDates => 'תאריכי טיול';
+  @override
+  String get archiveCloneDeparture => 'יציאה';
+  @override
+  String get archiveCloneReturn => 'חזרה';
+  @override
+  String get archiveCloneOpenTrip => 'פתח טיול חדש';
   @override
   String get settingsTitle => 'הגדרות';
   @override

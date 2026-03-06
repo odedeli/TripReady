@@ -9,6 +9,7 @@ import '../../database/trip_details_database.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
+import '../../services/app_notifier.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final Trip trip;
@@ -22,7 +23,15 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   bool _isLoading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() { super.initState(); _load(); 
+    AppNotifier.instance.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    AppNotifier.instance.removeListener(_load);
+    super.dispose();
+  }
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
@@ -92,10 +101,10 @@ class _DocumentsScreenState extends State<DocumentsScreen> {
   }
 
   Future<void> _openDocument(TripDocument doc) async {
-    if (!doc.hasFile) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l.documentsNoFileAttached))); return; }
+    if (!doc.hasFile) { if (mounted) showAppSnackBar(context, context.l.documentsNoFileAttached); return; }
     final file = File(doc.filePath!);
-    if (!await file.exists()) { if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(context.l.documentsNoFileAttached))); return; }
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${context.l.documentsFileAttached}: ${doc.filePath}')));
+    if (!await file.exists()) { if (mounted) showAppSnackBar(context, context.l.documentsNoFileAttached); return; }
+    if (mounted) showAppSnackBar(context, '${context.l.documentsFileAttached}: ${doc.filePath}');
   }
 }
 
@@ -200,7 +209,9 @@ class _AddEditDocumentDialogState extends State<_AddEditDocumentDialog> {
   }
 
   @override
-  void dispose() { _nameController.dispose(); _notesController.dispose(); super.dispose(); }
+  void dispose() {
+    _nameController.dispose(); _notesController.dispose(); super.dispose();
+  }
 
   Future<void> _pickFile() async {
     setState(() => _isPickingFile = true);

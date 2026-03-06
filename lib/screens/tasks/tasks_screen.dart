@@ -8,6 +8,7 @@ import '../../database/trip_details_database.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
+import '../../services/app_notifier.dart';
 
 class TasksScreen extends StatefulWidget {
   final Trip trip;
@@ -23,9 +24,12 @@ class _TasksScreenState extends State<TasksScreen> with SingleTickerProviderStat
   TaskSource? _sourceFilter; // null = all, task = manual only, packing = packing only
 
   @override
-  void initState() { super.initState(); _tabController = TabController(length: 3, vsync: this); _load(); }
+  void initState() { super.initState(); _tabController = TabController(length: 3, vsync: this); _load(); 
+    AppNotifier.instance.addListener(_load);
+  }
   @override
-  void dispose() { _tabController.dispose(); super.dispose(); }
+  void dispose() {
+    AppNotifier.instance.removeListener(_load); _tabController.dispose(); super.dispose(); }
 
   Future<void> _load() async {
     setState(() => _isLoading = true);

@@ -11,6 +11,7 @@ import '../../database/receipt_database.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
+import '../../services/app_notifier.dart';
 
 const List<String> kCommonCurrencies = ['USD','EUR','GBP','ILS','JPY','AUD','CAD','CHF','CNY','SEK','NOK','DKK','PLN','CZK','HUF','TRY','THB','SGD','HKD','MXN','BRL','ZAR','AED','INR'];
 
@@ -28,7 +29,15 @@ class _ReceiptsScreenState extends State<ReceiptsScreen> {
   ReceiptType? _filterType;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() { super.initState(); _load(); 
+    AppNotifier.instance.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    AppNotifier.instance.removeListener(_load);
+    super.dispose();
+  }
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
@@ -275,7 +284,9 @@ class _AddEditReceiptScreenState extends State<AddEditReceiptScreen> {
   }
 
   @override
-  void dispose() { _nameController.dispose(); _amountController.dispose(); _rateController.dispose(); _notesController.dispose(); super.dispose(); }
+  void dispose() {
+    _nameController.dispose(); _amountController.dispose(); _rateController.dispose(); _notesController.dispose(); super.dispose();
+  }
 
   String _typeLabel(ReceiptType t, AppLocalizations l) {
     switch (t) {
@@ -320,7 +331,7 @@ class _AddEditReceiptScreenState extends State<AddEditReceiptScreen> {
       }
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+      if (mounted) showAppSnackBar(context, '$e');
     } finally { if (mounted) setState(() => _isSaving = false); }
   }
 

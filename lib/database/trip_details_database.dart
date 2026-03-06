@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import '../services/app_notifier.dart';
 import '../models/trip_details.dart';
 import 'database_helper.dart';
 
@@ -20,16 +21,19 @@ extension TripDetailsDatabase on DatabaseHelper {
   Future<void> insertTask(TripTask task) async {
     final db = await database;
     await db.insert('tasks', task.toMap());
+     AppNotifier.instance.notify();
   }
 
   Future<void> updateTask(TripTask task) async {
     final db = await database;
     await db.update('tasks', task.toMap(), where: 'id = ?', whereArgs: [task.id]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> deleteTask(String taskId) async {
     final db = await database;
     await db.delete('tasks', where: 'id = ?', whereArgs: [taskId]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> setTaskStatus(String taskId, TaskStatus status) async {
@@ -40,6 +44,7 @@ extension TripDetailsDatabase on DatabaseHelper {
       where: 'id = ?',
       whereArgs: [taskId],
     );
+    AppNotifier.instance.notify();
   }
 
   /// Find the task linked to a packing item (source == packing).
@@ -101,6 +106,7 @@ extension TripDetailsDatabase on DatabaseHelper {
     if (task == null) return;
     final newStatus = isPacked ? TaskStatus.done : TaskStatus.pending;
     await setTaskStatus(task.id, newStatus);
+     AppNotifier.instance.notify();
   }
 
   /// Sync task done status → linked packing item packed status.
@@ -108,10 +114,11 @@ extension TripDetailsDatabase on DatabaseHelper {
     final db = await database;
     await db.update(
       'packing_items',
-      {'status': isDone ? 'packed' : 'notPacked'},
+      {'status': isDone ? 'packed' : 'not_packed'},
       where: 'id = ?',
       whereArgs: [packingItemId],
     );
+    AppNotifier.instance.notify();
   }
 
   /// Delete the task linked to a packing item (called when packing item is deleted).
@@ -122,6 +129,7 @@ extension TripDetailsDatabase on DatabaseHelper {
       where: 'source = ? AND source_id = ?',
       whereArgs: ['packing', packingItemId],
     );
+     AppNotifier.instance.notify();
   }
 
   // ==================== ADDRESSES ====================
@@ -140,17 +148,20 @@ extension TripDetailsDatabase on DatabaseHelper {
   Future<void> insertAddress(TripAddress address) async {
     final db = await database;
     await db.insert('addresses', address.toMap());
+     AppNotifier.instance.notify();
   }
 
   Future<void> updateAddress(TripAddress address) async {
     final db = await database;
     await db.update('addresses', address.toMap(),
         where: 'id = ?', whereArgs: [address.id]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> deleteAddress(String addressId) async {
     final db = await database;
     await db.delete('addresses', where: 'id = ?', whereArgs: [addressId]);
+     AppNotifier.instance.notify();
   }
 
   // ==================== DOCUMENTS ====================
@@ -169,16 +180,19 @@ extension TripDetailsDatabase on DatabaseHelper {
   Future<void> insertDocument(TripDocument doc) async {
     final db = await database;
     await db.insert('documents', doc.toMap());
+     AppNotifier.instance.notify();
   }
 
   Future<void> updateDocument(TripDocument doc) async {
     final db = await database;
     await db.update('documents', doc.toMap(),
         where: 'id = ?', whereArgs: [doc.id]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> deleteDocument(String docId) async {
     final db = await database;
     await db.delete('documents', where: 'id = ?', whereArgs: [docId]);
+     AppNotifier.instance.notify();
   }
 }

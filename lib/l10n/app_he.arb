@@ -64,6 +64,7 @@
   "tripsEditTrip": "ערוך נסיעה",
   "tripsDeleteTrip": "מחק נסיעה",
   "tripsArchiveTrip": "העבר לארכיון",
+  "tripsSetPlanned": "העבר לתכנון",
   "tripsSetActive": "הגדר כפעילה",
   "tripsTripName": "שם הנסיעה",
   "tripsDestination": "יעד",
@@ -243,6 +244,10 @@
   "archiveCloneTasksSubtitle": "כל המשימות (מאופס לממתין)",
   "archiveCloneAddresses": "כתובות",
   "archiveCloneAddressesSubtitle": "מלונות, מסעדות, אתרי תיירות",
+  "archiveCloneDates": "תאריכי טיול",
+  "archiveCloneDeparture": "יציאה",
+  "archiveCloneReturn": "חזרה",
+  "archiveCloneOpenTrip": "פתח טיול חדש",
   "settingsTitle": "הגדרות",
   "settingsDataManagement": "ניהול נתונים",
   "settingsExportBackup": "ייצא גיבוי",
@@ -378,5 +383,7 @@
   "colorAmberSunset": "ענבר · שקיעה",
   "colorCobaltStorm": "כחול · סערה",
   "colorGrassForest": "ירוק · יער",
-  "colorOrchidDusk": "סחלב · דמדומים"
+  "colorOrchidDusk": "סחלב · דמדומים",
+  "tripsAddDestination": "הוסף יעד",
+  "tripsDestinationHint": "לדוגמה: רומא"
 }

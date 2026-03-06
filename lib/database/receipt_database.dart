@@ -1,4 +1,5 @@
 import '../models/receipt.dart';
+import '../services/app_notifier.dart';
 import 'database_helper.dart';
 
 extension ReceiptDatabase on DatabaseHelper {
@@ -17,17 +18,20 @@ extension ReceiptDatabase on DatabaseHelper {
   Future<void> insertReceipt(Receipt receipt) async {
     final db = await database;
     await db.insert('receipts', receipt.toMap());
+     AppNotifier.instance.notify();
   }
 
   Future<void> updateReceipt(Receipt receipt) async {
     final db = await database;
     await db.update('receipts', receipt.toMap(),
         where: 'id = ?', whereArgs: [receipt.id]);
+     AppNotifier.instance.notify();
   }
 
   Future<void> deleteReceipt(String receiptId) async {
     final db = await database;
     await db.delete('receipts', where: 'id = ?', whereArgs: [receiptId]);
+     AppNotifier.instance.notify();
   }
 
   /// Returns total converted amount and breakdown by type

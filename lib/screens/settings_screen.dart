@@ -107,7 +107,7 @@ class SettingsScreen extends StatelessWidget {
   Future<void> _exportBackup(BuildContext context, AppLocalizations l) async {
     final msg = ScaffoldMessenger.of(context);
     final path = await BackupService.instance.exportBackup();
-    msg.showSnackBar(SnackBar(content: Text(path != null ? '${l.settingsExportBackup}:\n$path' : l.settingsBackupFailed), duration: const Duration(seconds: 6)));
+    showAppSnackBar(context, path != null ? '${l.settingsExportBackup}:\n$path' : l.settingsBackupFailed);
   }
 
   Future<void> _importBackup(BuildContext context, AppLocalizations l) async {
@@ -125,7 +125,7 @@ class SettingsScreen extends StatelessWidget {
     );
     if (confirm != true) return;
     final success = await BackupService.instance.importBackup();
-    msg.showSnackBar(SnackBar(content: Text(success ? l.backupRestoredSuccess : l.backupRestoreFailed)));
+    showAppSnackBar(context, success ? l.backupRestoredSuccess : l.backupRestoreFailed);
   }
 
   Future<void> _resetAppData(BuildContext context, AppLocalizations l) async {
@@ -148,7 +148,7 @@ class SettingsScreen extends StatelessWidget {
       await DatabaseHelper.instance.resetAllData();
       if (context.mounted) Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
     } catch (e) {
-      if (context.mounted) msg.showSnackBar(SnackBar(content: Text('$e')));
+      if (context.mounted) showAppSnackBar(context, '$e');
     }
   }
 }

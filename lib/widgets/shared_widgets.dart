@@ -274,3 +274,35 @@ class HomeButton extends StatelessWidget {
     );
   }
 }
+
+// ── Global snackbar helper ────────────────────────────────────────────────────
+/// Shows a snackbar with a dismiss × button on the right.
+/// Pass [action] for an additional labelled action (e.g. "Open Trip").
+void showAppSnackBar(
+  BuildContext context,
+  String message, {
+  SnackBarAction? action,
+  Duration duration = const Duration(seconds: 5),
+}) {
+  final messenger = ScaffoldMessenger.of(context);
+  messenger.showSnackBar(SnackBar(
+    content: Row(children: [
+      Expanded(child: Text(message)),
+      if (action != null) ...[
+        const SizedBox(width: 8),
+        TextButton(
+          onPressed: () { messenger.hideCurrentSnackBar(); action.onPressed(); },
+          child: Text(action.label,
+              style: const TextStyle(color: TripReadyTheme.amber, fontWeight: FontWeight.w700)),
+        ),
+      ],
+      const SizedBox(width: 4),
+      GestureDetector(
+        onTap: messenger.hideCurrentSnackBar,
+        child: const Icon(Icons.close, size: 18, color: Colors.white70),
+      ),
+    ]),
+    duration: duration,
+  ));
+}
+

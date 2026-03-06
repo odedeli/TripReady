@@ -75,6 +75,7 @@ abstract class AppLocalizations {
   String get tripsEditTrip;
   String get tripsDeleteTrip;
   String get tripsArchiveTrip;
+  String get tripsSetPlanned;
   String get tripsSetActive;
   String get tripsTripName;
   String get tripsDestination;
@@ -200,6 +201,26 @@ abstract class AppLocalizations {
   String get archiveCloneTasksSubtitle;
   String get archiveCloneAddresses;
   String get archiveCloneAddressesSubtitle;
+  String get archiveCloneDates;
+  String get archiveCloneDeparture;
+  String get archiveCloneReturn;
+  String get archiveCloneOpenTrip;
+  String get settingsAppearance;
+  String get settingsSelectTheme;
+  String get themeLight;
+  String get themeDark;
+  String get themeSystem;
+  String get settingsTextSize;
+  String get fontSmall;
+  String get fontNormal;
+  String get fontLarge;
+  String get settingsColorTheme;
+  String get colorOceanDusk;
+  String get colorOceanMidnight;
+  String get colorAmberSunset;
+  String get colorCobaltStorm;
+  String get colorGrassForest;
+  String get colorOrchidDusk;
   String get settingsTitle;
   String get settingsDataManagement;
   String get settingsExportBackup;
@@ -325,7 +346,10 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
 }
 
 class _AppLocalizationsImpl extends AppLocalizations {
-  _AppLocalizationsImpl(super.locale);
+  _AppLocalizationsImpl(String locale) : super(locale);
+
+  // Expose locale string for languageCode access in getters
+  Locale get locale => Locale(localeName);
 
 
   @override
@@ -758,6 +782,13 @@ class _AppLocalizationsImpl extends AppLocalizations {
         return 'העבר לארכיון';
       default:
         return 'Archive Trip';
+    }
+  }
+  @override
+  String get tripsSetPlanned {
+    switch (localeName) {
+      case 'he': return 'העבר לתכנון';
+      default:   return 'Set as Planned';
     }
   }
   @override
@@ -1883,6 +1914,146 @@ class _AppLocalizationsImpl extends AppLocalizations {
         return 'מלונות, מסעדות, אתרי תיירות';
       default:
         return 'Hotels, restaurants, landmarks';
+    }
+  }
+  @override
+  String get archiveCloneDates {
+    switch (locale.languageCode) {
+      case 'he': return 'תאריכי טיול';
+      default:   return 'Trip Dates';
+    }
+  }
+  @override
+  String get archiveCloneDeparture {
+    switch (locale.languageCode) {
+      case 'he': return 'יציאה';
+      default:   return 'Departure';
+    }
+  }
+  @override
+  String get archiveCloneReturn {
+    switch (locale.languageCode) {
+      case 'he': return 'חזרה';
+      default:   return 'Return';
+    }
+  }
+  @override
+  String get archiveCloneOpenTrip {
+    switch (locale.languageCode) {
+      case 'he': return 'פתח טיול חדש';
+      default:   return 'Open New Trip';
+    }
+  }
+  @override
+  String get settingsAppearance {
+    switch (localeName) {
+      case 'he': return 'מראה';
+      default:   return 'Appearance';
+    }
+  }
+  @override
+  String get settingsSelectTheme {
+    switch (localeName) {
+      case 'he': return 'בחר ערכת נושא';
+      default:   return 'Select Theme';
+    }
+  }
+  @override
+  String get themeLight {
+    switch (localeName) {
+      case 'he': return 'בהיר';
+      default:   return 'Light';
+    }
+  }
+  @override
+  String get themeDark {
+    switch (localeName) {
+      case 'he': return 'כהה';
+      default:   return 'Dark';
+    }
+  }
+  @override
+  String get themeSystem {
+    switch (localeName) {
+      case 'he': return 'לפי מערכת';
+      default:   return 'System';
+    }
+  }
+  @override
+  String get settingsTextSize {
+    switch (localeName) {
+      case 'he': return 'גודל טקסט';
+      default:   return 'Text Size';
+    }
+  }
+  @override
+  String get fontSmall {
+    switch (localeName) {
+      case 'he': return 'קטן';
+      default:   return 'Small';
+    }
+  }
+  @override
+  String get fontNormal {
+    switch (localeName) {
+      case 'he': return 'רגיל';
+      default:   return 'Normal';
+    }
+  }
+  @override
+  String get fontLarge {
+    switch (localeName) {
+      case 'he': return 'גדול';
+      default:   return 'Large';
+    }
+  }
+  @override
+  String get settingsColorTheme {
+    switch (localeName) {
+      case 'he': return 'ערכת צבעים';
+      default:   return 'Color Theme';
+    }
+  }
+  @override
+  String get colorOceanDusk {
+    switch (localeName) {
+      case 'he': return 'אוקיינוס · דמדומים';
+      default:   return 'Ocean · Dusk';
+    }
+  }
+  @override
+  String get colorOceanMidnight {
+    switch (localeName) {
+      case 'he': return 'אוקיינוס · חצות';
+      default:   return 'Ocean · Midnight';
+    }
+  }
+  @override
+  String get colorAmberSunset {
+    switch (localeName) {
+      case 'he': return 'ענבר · שקיעה';
+      default:   return 'Amber · Sunset';
+    }
+  }
+  @override
+  String get colorCobaltStorm {
+    switch (localeName) {
+      case 'he': return 'כחול · סערה';
+      default:   return 'Cobalt · Storm';
+    }
+  }
+  @override
+  String get colorGrassForest {
+    switch (localeName) {
+      case 'he': return 'ירוק · יער';
+      default:   return 'Grass · Forest';
+    }
+  }
+  @override
+  String get colorOrchidDusk {
+    switch (localeName) {
+      case 'he': return 'סחלב · דמדומים';
+      default:   return 'Orchid · Dusk';
     }
   }
   @override

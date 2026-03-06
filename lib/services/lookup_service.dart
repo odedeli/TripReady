@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'app_notifier.dart';
 import 'package:uuid/uuid.dart';
 import '../models/lookup_value.dart';
 import '../database/database_helper.dart';
@@ -103,6 +104,7 @@ class LookupService extends ChangeNotifier {
     );
     _updateCache(updated);
     notifyListeners();
+     AppNotifier.instance.notify();
   }
 
   /// Rename the display label(s) of a value.
@@ -119,6 +121,7 @@ class LookupService extends ChangeNotifier {
     );
     _updateCache(updated);
     notifyListeners();
+     AppNotifier.instance.notify();
   }
 
   /// Add a brand-new custom value to a category.
@@ -144,6 +147,7 @@ class LookupService extends ChangeNotifier {
     _cache[cat] = [...existing, value];
     notifyListeners();
     return value;
+     AppNotifier.instance.notify();
   }
 
   /// Permanently delete a custom (non-default) value.
@@ -155,6 +159,7 @@ class LookupService extends ChangeNotifier {
     _cache[value.category] =
         (_cache[value.category] ?? []).where((v) => v.id != value.id).toList();
     notifyListeners();
+     AppNotifier.instance.notify();
   }
 
   /// Reorder values within a category.
@@ -174,6 +179,7 @@ class LookupService extends ChangeNotifier {
     await batch.commit(noResult: true);
     _cache[cat] = list;
     notifyListeners();
+     AppNotifier.instance.notify();
   }
 
   void _updateCache(LookupValue updated) {

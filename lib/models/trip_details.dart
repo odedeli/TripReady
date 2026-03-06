@@ -117,6 +117,8 @@ class TripAddress {
   final String? website;
   final String? phone;
   final String? notes;
+  final double? latitude;
+  final double? longitude;
   final DateTime createdAt;
 
   TripAddress({
@@ -129,8 +131,12 @@ class TripAddress {
     this.website,
     this.phone,
     this.notes,
+    this.latitude,
+    this.longitude,
     required this.createdAt,
   });
+
+  bool get hasCoords => latitude != null && longitude != null;
 
   String get categoryLabel {
     switch (category) {
@@ -156,6 +162,8 @@ class TripAddress {
     'website': website,
     'phone': phone,
     'notes': notes,
+    'latitude': latitude,
+    'longitude': longitude,
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -172,6 +180,8 @@ class TripAddress {
     website: map['website'],
     phone: map['phone'],
     notes: map['notes'],
+    latitude: map['latitude'] as double?,
+    longitude: map['longitude'] as double?,
     createdAt: DateTime.parse(map['created_at']),
   );
 
@@ -185,7 +195,10 @@ class TripAddress {
     String? website,
     String? phone,
     String? notes,
+    double? latitude,
+    double? longitude,
     DateTime? createdAt,
+    bool clearCoords = false,
   }) => TripAddress(
     id: id ?? this.id,
     tripId: tripId ?? this.tripId,
@@ -196,6 +209,8 @@ class TripAddress {
     website: website ?? this.website,
     phone: phone ?? this.phone,
     notes: notes ?? this.notes,
+    latitude: clearCoords ? null : (latitude ?? this.latitude),
+    longitude: clearCoords ? null : (longitude ?? this.longitude),
     createdAt: createdAt ?? this.createdAt,
   );
 }

@@ -9,6 +9,7 @@ import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
 import '../trip_detail_screen.dart';
+import '../../services/app_notifier.dart';
 
 class ArchiveScreen extends StatefulWidget {
   const ArchiveScreen({super.key});
@@ -21,7 +22,17 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   bool _isLoading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _load();
+    AppNotifier.instance.addListener(_load);
+  }
+
+  @override
+  void dispose() {
+    AppNotifier.instance.removeListener(_load);
+    super.dispose();
+  }
 
   Future<void> _load() async {
     setState(() => _isLoading = true);
@@ -33,17 +44,21 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   Widget build(BuildContext context) {
     final l = context.l;
     return Scaffold(
-      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true, leading: HomeButton()),
+      appBar: AppBar(title: AppLogo.whiteLandscape(height: 28), centerTitle: true, leading: HomeButton(), actions: [IconButton(icon: const Icon(Icons.refresh_outlined), tooltip: context.l.actionUpdate, onPressed: _load)]),
       body: WatermarkBody(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))
             : _archived.isEmpty
                 ? EmptyState(icon: Icons.archive_outlined, title: l.archiveNoTrips, subtitle: l.archiveNoTripsSubtitle)
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
-                    itemCount: _archived.length,
-                    itemBuilder: (ctx, i) => _ArchivedTripCard(trip: _archived[i],
-                      onOpen: () => _openTrip(_archived[i]), onClone: () => _cloneTrip(_archived[i]), onDelete: () => _deleteTrip(_archived[i]))),
+                : RefreshIndicator(
+                    color: TripReadyTheme.teal,
+                    onRefresh: _load,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                      itemCount: _archived.length,
+                      itemBuilder: (ctx, i) => _ArchivedTripCard(trip: _archived[i],
+                        onOpen: () => _openTrip(_archived[i]), onClone: () => _cloneTrip(_archived[i]), onDelete: () => _deleteTrip(_archived[i]))),
+                  ),
       ),
     );
   }
@@ -54,8 +69,25 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
   }
 
   Future<void> _cloneTrip(Trip trip) async {
-    final confirm = await showDialog<bool>(context: context, builder: (_) => _CloneTripDialog(trip: trip));
-    if (confirm == true) _load();
+    final newTrip = await showDialog<Trip>(
+        context: context, builder: (_) => _CloneTripDialog(trip: trip));
+    if (newTrip == null) return;
+    _load();
+    if (!mounted) return;
+    final l = context.l;
+    showAppSnackBar(
+      context,
+      '"${newTrip.name}" ${l.tripsStatusPlanned.toLowerCase()}.',
+      action: SnackBarAction(
+        label: l.archiveCloneOpenTrip,
+        onPressed: () async {
+          await Navigator.push(context,
+              MaterialPageRoute(builder: (_) => TripDetailScreen(trip: newTrip)));
+          _load();
+        },
+      ),
+      duration: const Duration(seconds: 6),
+    );
   }
 
   Future<void> _deleteTrip(Trip trip) async {
@@ -97,7 +129,7 @@ class _ArchivedTripCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(children: [
             const Icon(Icons.place_outlined, size: 13, color: TripReadyTheme.teal), const SizedBox(width: 4),
-            Text(trip.countryDisplay != null ? '${trip.destination}, ${trip.countryDisplay}' : trip.destination,
+            Text(trip.routeDisplay,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: TripReadyTheme.teal, fontWeight: FontWeight.w500)),
           ]),
           const SizedBox(height: 4),
@@ -123,70 +155,277 @@ class _CloneTripDialog extends StatefulWidget {
 
 class _CloneTripDialogState extends State<_CloneTripDialog> {
   final _nameController = TextEditingController();
+  late DateTime _departureDate;
+  late DateTime _returnDate;
   bool _clonePacking = true, _cloneTasks = true, _cloneAddresses = true, _isSaving = false;
 
   @override
-  void initState() { super.initState(); _nameController.text = '${widget.trip.name} (copy)'; }
+  void initState() {
+    super.initState();
+    _nameController.text = '${widget.trip.name} (copy)';
+    // Default new dates: keep same duration, starting from today
+    final duration = widget.trip.returnDate.difference(widget.trip.departureDate);
+    _departureDate = DateTime.now().add(const Duration(days: 1));
+    _returnDate    = _departureDate.add(duration);
+  }
+
   @override
-  void dispose() { _nameController.dispose(); super.dispose(); }
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDate(bool isDeparture) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: isDeparture ? _departureDate : _returnDate,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2040),
+      initialDatePickerMode: DatePickerMode.day,
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(
+          colorScheme: ColorScheme.light(
+            primary: TripReadyTheme.teal,
+            onPrimary: Colors.white,
+            surface: TripReadyTheme.cream,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked == null) return;
+    setState(() {
+      if (isDeparture) {
+        _departureDate = picked;
+        if (_returnDate.isBefore(_departureDate)) {
+          _returnDate = _departureDate.add(
+              widget.trip.returnDate.difference(widget.trip.departureDate));
+        }
+      } else {
+        if (!picked.isBefore(_departureDate)) _returnDate = picked;
+      }
+    });
+  }
 
   Future<void> _clone() async {
     if (_nameController.text.trim().isEmpty) return;
     setState(() => _isSaving = true);
+    Trip? newTrip;
     try {
-      final db = DatabaseHelper.instance;
+      final db    = DatabaseHelper.instance;
       final rawDb = await db.database;
-      final now = DateTime.now();
-      final newTripId = const Uuid().v4();
+      final now   = DateTime.now();
+      final newId = const Uuid().v4();
 
-      final newTrip = widget.trip.copyWith(id: newTripId, name: _nameController.text.trim(), status: TripStatus.planned, createdAt: now, updatedAt: now);
+      newTrip = widget.trip.copyWith(
+        id: newId,
+        name: _nameController.text.trim(),
+        status: TripStatus.planned,
+        departureDate: _departureDate,
+        returnDate: _returnDate,
+        createdAt: now,
+        updatedAt: now,
+      );
       await db.insertTrip(newTrip);
 
       if (_clonePacking) {
-        final items = await rawDb.query('packing_items', where: 'trip_id = ?', whereArgs: [widget.trip.id]);
-        for (final item in items) await rawDb.insert('packing_items', {...item, 'id': const Uuid().v4(), 'trip_id': newTripId, 'status': 'not_packed', 'created_at': now.toIso8601String()});
+        final items = await rawDb.query('packing_items',
+            where: 'trip_id = ?', whereArgs: [widget.trip.id]);
+        for (final item in items) {
+          await rawDb.insert('packing_items', {
+            ...item,
+            'id': const Uuid().v4(),
+            'trip_id': newId,
+            'status': 'not_packed',
+            'created_at': now.toIso8601String(),
+          });
+        }
       }
       if (_cloneTasks) {
-        final tasks = await rawDb.query('tasks', where: 'trip_id = ?', whereArgs: [widget.trip.id]);
-        for (final task in tasks) await rawDb.insert('tasks', {...task, 'id': const Uuid().v4(), 'trip_id': newTripId, 'status': 'pending', 'created_at': now.toIso8601String()});
+        final tasks = await rawDb.query('tasks',
+            where: 'trip_id = ?', whereArgs: [widget.trip.id]);
+        for (final task in tasks) {
+          // Copy only non-date fields — due_date, reminder_date, completed_at excluded
+          final stripped = Map<String, Object?>.from(task)
+            ..remove('due_date')
+            ..remove('reminder_date')
+            ..remove('completed_at')
+            ..remove('updated_at');
+          await rawDb.insert('tasks', {
+            ...stripped,
+            'id': const Uuid().v4(),
+            'trip_id': newId,
+            'status': 'pending',
+            'created_at': now.toIso8601String(),
+          });
+        }
       }
       if (_cloneAddresses) {
-        final addrs = await rawDb.query('addresses', where: 'trip_id = ?', whereArgs: [widget.trip.id]);
-        for (final addr in addrs) await rawDb.insert('addresses', {...addr, 'id': const Uuid().v4(), 'trip_id': newTripId, 'created_at': now.toIso8601String()});
+        final addrs = await rawDb.query('addresses',
+            where: 'trip_id = ?', whereArgs: [widget.trip.id]);
+        for (final addr in addrs) {
+          await rawDb.insert('addresses', {
+            ...addr,
+            'id': const Uuid().v4(),
+            'trip_id': newId,
+            'created_at': now.toIso8601String(),
+          });
+        }
       }
-      if (mounted) Navigator.pop(context, true);
+      if (mounted) Navigator.pop(context, newTrip);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
-    } finally { if (mounted) setState(() => _isSaving = false); }
+      if (mounted) showAppSnackBar(context, '$e');
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final l = context.l;
+    final l   = context.l;
+    final fmt = DateFormat('dd MMM yyyy');
+    final dur = _returnDate.difference(_departureDate).inDays + 1;
+
     return AlertDialog(
       title: Text(l.archiveCloneTitle),
-      content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Text('"${widget.trip.name}"', style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 16),
-        TextField(controller: _nameController, autofocus: true,
-          decoration: InputDecoration(labelText: '${l.archiveCloneNewName} *', prefixIcon: const Icon(Icons.luggage_outlined))),
-        const SizedBox(height: 16),
-        Text(l.archiveClonePacking, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
-        CheckboxListTile(contentPadding: EdgeInsets.zero, value: _clonePacking, onChanged: (v) => setState(() => _clonePacking = v ?? false),
-          title: Text(l.archiveClonePacking), subtitle: Text(l.archiveClonePackingSubtitle), activeColor: TripReadyTheme.teal, controlAffinity: ListTileControlAffinity.leading),
-        CheckboxListTile(contentPadding: EdgeInsets.zero, value: _cloneTasks, onChanged: (v) => setState(() => _cloneTasks = v ?? false),
-          title: Text(l.archiveCloneTasks), subtitle: Text(l.archiveCloneTasksSubtitle), activeColor: TripReadyTheme.teal, controlAffinity: ListTileControlAffinity.leading),
-        CheckboxListTile(contentPadding: EdgeInsets.zero, value: _cloneAddresses, onChanged: (v) => setState(() => _cloneAddresses = v ?? false),
-          title: Text(l.archiveCloneAddresses), subtitle: Text(l.archiveCloneAddressesSubtitle), activeColor: TripReadyTheme.teal, controlAffinity: ListTileControlAffinity.leading),
-      ])),
+      content: SingleChildScrollView(
+        child: Column(mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('"${widget.trip.name}"',
+              style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: 16),
+
+          // ── New trip name ──────────────────────────────────────
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            decoration: InputDecoration(
+                labelText: '${l.archiveCloneNewName} *',
+                prefixIcon: const Icon(Icons.luggage_outlined)),
+          ),
+          const SizedBox(height: 20),
+
+          // ── Dates section ──────────────────────────────────────
+          Text(l.archiveCloneDates,
+              style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 8),
+          Row(children: [
+            Expanded(child: _DateTile(
+              label: l.archiveCloneDeparture,
+              date: _departureDate,
+              fmt: fmt,
+              onTap: () => _pickDate(true),
+            )),
+            const SizedBox(width: 8),
+            // Duration badge
+            Column(mainAxisSize: MainAxisSize.min, children: [
+              const Icon(Icons.arrow_forward,
+                  size: 14, color: TripReadyTheme.textLight),
+              const SizedBox(height: 2),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: TripReadyTheme.teal.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text('${dur}d',
+                    style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: TripReadyTheme.teal)),
+              ),
+            ]),
+            const SizedBox(width: 8),
+            Expanded(child: _DateTile(
+              label: l.archiveCloneReturn,
+              date: _returnDate,
+              fmt: fmt,
+              onTap: () => _pickDate(false),
+            )),
+          ]),
+          const SizedBox(height: 20),
+
+          // ── What to copy ───────────────────────────────────────
+          Text(l.archiveClonePacking,
+              style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: 4),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _clonePacking,
+            onChanged: (v) => setState(() => _clonePacking = v ?? false),
+            title: Text(l.archiveClonePacking),
+            subtitle: Text(l.archiveClonePackingSubtitle),
+            activeColor: TripReadyTheme.teal,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _cloneTasks,
+            onChanged: (v) => setState(() => _cloneTasks = v ?? false),
+            title: Text(l.archiveCloneTasks),
+            subtitle: Text(l.archiveCloneTasksSubtitle),
+            activeColor: TripReadyTheme.teal,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            value: _cloneAddresses,
+            onChanged: (v) => setState(() => _cloneAddresses = v ?? false),
+            title: Text(l.archiveCloneAddresses),
+            subtitle: Text(l.archiveCloneAddressesSubtitle),
+            activeColor: TripReadyTheme.teal,
+            controlAffinity: ListTileControlAffinity.leading,
+          ),
+
+        ]),
+      ),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.actionCancel)),
+        TextButton(
+            onPressed: () => Navigator.pop(context, null),
+            child: Text(l.actionCancel)),
         ElevatedButton(
           onPressed: _isSaving ? null : _clone,
-          child: _isSaving ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(l.archiveCloneTrip),
+          child: _isSaving
+              ? const SizedBox(width: 18, height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+              : Text(l.archiveCloneTrip),
         ),
       ],
     );
   }
+}
+
+// ── Compact date tile for clone dialog ───────────────────────────────────────
+class _DateTile extends StatelessWidget {
+  final String label;
+  final DateTime date;
+  final DateFormat fmt;
+  final VoidCallback onTap;
+  const _DateTile({required this.label, required this.date,
+      required this.fmt, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: BoxDecoration(
+        color: TripReadyTheme.teal.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: TripReadyTheme.teal.withOpacity(0.3)),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(label, style: Theme.of(context).textTheme.bodySmall
+            ?.copyWith(color: TripReadyTheme.textMid)),
+        const SizedBox(height: 2),
+        Row(children: [
+          Expanded(child: Text(fmt.format(date),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(fontWeight: FontWeight.w600))),
+          Icon(Icons.calendar_month_outlined,
+              size: 14, color: TripReadyTheme.teal),
+        ]),
+      ]),
+    ),
+  );
 }
