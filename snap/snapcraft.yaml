@@ -1,0 +1,104 @@
+name: tripready
+base: core22
+version: '1.4.1'
+summary: Personal travel planner — offline, private, no ads
+description: |
+  TripReady is an offline-first personal travel planner for managing
+  everything about your trips in one place.
+
+  Features:
+  - Trips with multi-destination routes, status tracking, and archive
+  - Packing lists with categories, bulk actions, and Excel import/export
+  - Task manager with packing integration
+  - Expense & receipt tracker with multi-currency support
+  - Address book with interactive OSM maps and geocoding
+  - Document attachments per trip
+  - Full Hebrew (RTL) and English localisation
+  - Dark / light / auto theme with six colour palettes
+
+  All data is stored locally on your device — no accounts, no cloud, no ads.
+
+grade: stable
+confinement: strict
+
+architectures:
+  - build-on: amd64
+
+apps:
+  tripready:
+    command: tripready/tripready
+    desktop: usr/share/applications/tripready.desktop
+    plugs:
+      - home
+      - network          # OpenStreetMap tiles + Nominatim geocoding
+      - opengl
+      - wayland
+      - x11
+      - desktop
+      - desktop-legacy
+      - audio-playback
+      - removable-media  # file picker / backup import/export
+
+parts:
+  tripready:
+    plugin: nil
+    source: .
+    build-packages:
+      - curl
+      - unzip
+      - clang
+      - cmake
+      - ninja-build
+      - pkg-config
+      - libgtk-3-dev
+      - liblzma-dev
+      - libstdc++-12-dev
+      - libsqlite3-dev
+      - patchelf
+    override-build: |
+      # Install Flutter
+      FLUTTER_VERSION="3.29.0"
+      curl -fsSL \
+        "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_${FLUTTER_VERSION}-stable.tar.xz" \
+        | tar xJ -C /opt
+      export PATH="/opt/flutter/bin:$PATH"
+      flutter config --enable-linux-desktop
+      flutter pub get
+      flutter build linux --release
+
+      # Copy bundle
+      mkdir -p "$SNAPCRAFT_PART_INSTALL/tripready"
+      cp -r build/linux/x64/release/bundle/. "$SNAPCRAFT_PART_INSTALL/tripready/"
+      chmod +x "$SNAPCRAFT_PART_INSTALL/tripready/tripready"
+
+      # Install icons to freedesktop paths
+      for SIZE in 16 32 48 64 128 256 512; do
+        mkdir -p "$SNAPCRAFT_PART_INSTALL/usr/share/icons/hicolor/${SIZE}x${SIZE}/apps"
+        cp "linux/packaging/icons/tripready_${SIZE}.png" \
+           "$SNAPCRAFT_PART_INSTALL/usr/share/icons/hicolor/${SIZE}x${SIZE}/apps/tripready.png"
+      done
+
+      # Install desktop entry
+      mkdir -p "$SNAPCRAFT_PART_INSTALL/usr/share/applications"
+      cat > "$SNAPCRAFT_PART_INSTALL/usr/share/applications/tripready.desktop" << DESKTOP
+      [Desktop Entry]
+      Name=TripReady
+      Comment=Personal travel planner and task manager
+      Exec=tripready
+      Icon=\${SNAP}/usr/share/icons/hicolor/256x256/apps/tripready.png
+      Terminal=false
+      Type=Application
+      Categories=Utility;Office;
+      StartupWMClass=tripready
+      DESKTOP
+
+    stage-packages:
+      - libgtk-3-0
+      - libglib2.0-0
+      - libpango-1.0-0
+      - libcairo2
+      - libgdk-pixbuf-2.0-0
+      - libatk1.0-0
+      - libsqlite3-0
+      - libstdc++6
+      - libgcc-s1

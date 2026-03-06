@@ -5,6 +5,7 @@ import '../models/trip.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
 import '../widgets/shared_widgets.dart';
+import '../widgets/trip_route_display.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/watermark_scaffold.dart';
 import '../services/localization_ext.dart';
@@ -160,7 +161,9 @@ class _DashboardContent extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.place_outlined, size: 14, color: Colors.white60),
                 const SizedBox(width: 4),
-                Text(trip.routeDisplay, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+                TripRouteDisplay(trip: trip,
+                    style: const TextStyle(fontSize: 14),
+                    color: Colors.white70),
               ]),
               const SizedBox(height: 16),
               Row(children: [

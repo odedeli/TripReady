@@ -14,7 +14,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - In-app & system notifications
 - Document expiry alerts
 - Calendar integration
-- **Store prep:** Snap Store packaging (`snapcraft.yaml`, CI integration)
 - **Store prep:** Google Play Store — Android keystore signing, AAB build, store listing assets, privacy policy
 
 ### Sprint v1.6
@@ -30,6 +29,59 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Budget tracking
 - Google Drive integration
 - Embedded document viewer
+
+---
+
+## [1.4.1] — 2026-03-06
+
+### Bug Fixes & Platform Improvements
+
+#### Flag Rendering (all platforms)
+- **Replaced emoji-based flags** with the `country_flags` package — SVG vector assets render correctly on Windows, Linux and Android with no OS emoji font dependency
+- **`FlagWidget`** rewritten to wrap `CountryFlag.fromCountryCode()`; platform detection removed entirely
+- **Trip cards, archive cards, dashboard** — `Text(trip.routeDisplay)` replaced with new `TripRouteDisplay` widget; flags render inline as proper image widgets
+- **Trip detail header** — simple destination replaced with `TripDestinationDisplay` widget
+- **Route chips** — `flagInline()` helper updated; all chip flag rendering unchanged, now backed by SVG
+- **Settings language selector** — dropdown flag `Text` replaced with `CountryFlag` widget
+- **`countries.dart`** — `localizedDisplay()` and `display` no longer embed raw emoji into strings; country name only returned
+
+#### Country → City Destination Picker (UX)
+- **`CityPickerField`** replaces free-text destination field — bottom sheet with bundled offline city list (~640 cities, 178 countries)
+- **Live Nominatim autocomplete** — 400ms debounced query fires as user types; results appear under a "Suggestions" section alongside bundled matches
+- **Country first layout** — country picker (flex 2) left, city picker (flex 3) right; applied to departure, all stops, and return destination rows
+- **Recent destinations** — every confirmed city selection is saved (up to 20 entries); shown at top of picker when search box is empty; filtered by selected country
+- Recent destinations manageable in Settings → Recent Destinations (per-item swipe-to-delete, clear all)
+
+#### Map Language
+- **`MapLanguageService`** — new service storing map geocoding language preference
+- **Geocoding `Accept-Language` header** — all Nominatim requests now pass the UI language code; place names returned in the active app language
+- **Settings → Maps** — toggle: "Place names match app language" vs "always English"; persisted in `shared_preferences`
+
+#### Android OSM Support
+- Added `<uses-permission android:name="android.permission.INTERNET"/>` to `AndroidManifest.xml`
+- `android:usesCleartextTraffic="false"` set on application tag
+- Fixes map tiles and Nominatim geocoding not loading on Android
+
+#### Linux App Icon
+- `.deb` CI build now installs all 7 icon sizes (16 → 512px) to `/usr/share/icons/hicolor/{size}x{size}/apps/`
+- Copies the real `linux/packaging/tripready.desktop` file instead of the previous inline stub
+- Snap build includes the same icon install step
+
+#### Auto Version in About
+- `package_info_plus` dependency added; version read at runtime via `PackageInfo.fromPlatform()`
+- Settings → About card and `showAboutDialog` both display the live version from `pubspec.yaml`
+
+#### Snap Store Prep
+- `snap/snapcraft.yaml` added — `strict` confinement, required plugs (`network`, `home`, `wayland`, `x11`, `desktop`)
+- GitHub Actions `build-snap` job added to `build_all.yml` — builds `.snap` artifact on release using `snapcraft --destructive-mode` on `ubuntu-22.04`
+
+### New Dependencies
+- `country_flags: ^2.0.1` — SVG flag assets, replaces emoji font approach
+- `package_info_plus: ^8.0.0` — runtime version reading
+
+### Removed
+- `NotoColorEmoji_Flags.ttf` font asset and font declaration — no longer needed
+- `tools/subset_flag_font.py` subsetting script — no longer needed
 
 ---
 

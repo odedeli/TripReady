@@ -27,6 +27,7 @@ A personal travel planner for Windows, Linux, and Android — built with Flutter
 | Framework | Flutter 3.41.2 / Dart 3.11.0 |
 | Database | SQLite via `sqflite` + `sqflite_common_ffi` |
 | Maps | `flutter_map` + OpenStreetMap tiles + Nominatim geocoding |
+| Flags | `country_flags` — SVG vector flag assets, cross-platform |
 | Localisation | Custom standalone `AppLocalizations` (no code generation) |
 | Fonts | Google Fonts — DM Sans + Playfair Display |
 | State | `ChangeNotifier` + `ValueNotifier` |
@@ -232,6 +233,7 @@ Use the **Settings → Export Backup** option to save a copy of the SQLite datab
 
 | Version | Notes |
 |---|---|
+| 1.4.1 | Flag rendering fix (SVG), country→city picker with autocomplete & recents, map language setting, Android OSM fix, Linux icon fix, Snap Store prep, auto version |
 | 1.4.0 | Maps integration (OSM/Nominatim), multi-destination route model, archive clone polish, Form/Map tabs in edit screens |
 | 1.3.0 | Packing ↔ Task integration, country picker i18n, customisable lookup tables, UX refinements |
 | 1.2.0 | Branding, colour themes, dark/light/auto mode, font size control |

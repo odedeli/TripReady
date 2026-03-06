@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import '../widgets/flag_widget.dart';
+import 'package:country_flags/country_flags.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import '../services/recent_destinations_service.dart';
+import '../services/map_language_service.dart';
+
 import '../widgets/app_logo.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/watermark_scaffold.dart';
@@ -53,6 +59,15 @@ class SettingsScreen extends StatelessWidget {
           _SettingsTile(icon: Icons.delete_forever_outlined, title: l.settingsResetData, subtitle: l.settingsResetDataSubtitle, isDanger: true, onTap: () => _resetAppData(context, l)),
           const SizedBox(height: 24),
 
+
+          _SectionLabel('Maps'),
+          const _MapLanguageTile(),
+          const SizedBox(height: 24),
+
+          _SectionLabel('Recent Destinations'),
+          const _RecentDestinationsTile(),
+          const SizedBox(height: 24),
+
           _SectionLabel(l.settingsAbout),
           Card(
             margin: const EdgeInsets.only(bottom: 10),
@@ -61,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
               onTap: () => showAboutDialog(
                 context: context,
                 applicationName: 'TripReady',
-                applicationVersion: '1.3.0',
+                applicationVersion: '1.4.1',
                 applicationIcon: Padding(
                   padding: const EdgeInsets.all(8),
                   child: AppLogo.icon(size: 56),
@@ -87,8 +102,15 @@ class SettingsScreen extends StatelessWidget {
                               ],
                             ),
                           ),
-                          Text('v1.3.0',
-                              style: Theme.of(context).textTheme.bodySmall),
+                          FutureBuilder<String>(
+                            future: PackageInfo.fromPlatform()
+                                .then((i) => i.version)
+                                .catchError((_) => '1.4.1'),
+                            builder: (_, snap) => Text(
+                              "v${snap.data ?? '1.4.1'}",
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -168,7 +190,7 @@ class _LanguageTileState extends State<_LanguageTile> {
     final l = AppLocalizations.of(context);
     final primary = Theme.of(context).colorScheme.primary;
     final currentCode = LanguageService.instance.locale.languageCode;
-    final options = [_LangOption(code: 'en', label: l.langEnglish, flag: '🇬🇧'), _LangOption(code: 'he', label: l.langHebrew, flag: '🇮🇱')];
+    final options = [_LangOption(code: 'en', label: l.langEnglish, countryCode: 'GB'), _LangOption(code: 'he', label: l.langHebrew, countryCode: 'IL')];
 
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -189,7 +211,7 @@ class _LanguageTileState extends State<_LanguageTile> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: primary.withOpacity(0.3))),
                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide(color: primary, width: 2)),
               ),
-              items: options.map((opt) => DropdownMenuItem<String>(value: opt.code, child: Row(children: [Text(opt.flag, style: const TextStyle(fontSize: 20)), const SizedBox(width: 10), Text(opt.label, style: const TextStyle(fontSize: 14))]))).toList(),
+              items: options.map((opt) => DropdownMenuItem<String>(value: opt.code, child: Row(children: [CountryFlag.fromCountryCode(opt.countryCode, height: 20, width: 27, borderRadius: 2), const SizedBox(width: 10), Text(opt.label, style: const TextStyle(fontSize: 14))]))).toList(),
               onChanged: (code) { if (code != null) LanguageService.instance.setLocale(Locale(code)); },
             ),
           ])),
@@ -198,7 +220,7 @@ class _LanguageTileState extends State<_LanguageTile> {
     );
   }
 }
-class _LangOption { final String code, label, flag; const _LangOption({required this.code, required this.label, required this.flag}); }
+class _LangOption { final String code, label, countryCode; const _LangOption({required this.code, required this.label, required this.countryCode}); }
 
 // ── Theme Tile ────────────────────────────────────────────────
 class _ThemeTile extends StatefulWidget {
@@ -496,6 +518,203 @@ class _SettingsTile extends StatelessWidget {
         subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
         trailing: Icon(Icons.chevron_right, color: onSurface.withOpacity(0.3)),
       ),
+    );
+  }
+}
+
+// ── Map Language tile ────────────────────────────────────────────────────────
+
+class _MapLanguageTile extends StatefulWidget {
+  const _MapLanguageTile();
+  @override
+  State<_MapLanguageTile> createState() => _MapLanguageTileState();
+}
+
+class _MapLanguageTileState extends State<_MapLanguageTile> {
+  @override
+  void initState() {
+    super.initState();
+    MapLanguageService.instance.addListener(_rebuild);
+    MapLanguageService.instance.load();
+  }
+
+  @override
+  void dispose() {
+    MapLanguageService.instance.removeListener(_rebuild);
+    super.dispose();
+  }
+
+  void _rebuild() { if (mounted) setState(() {}); }
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final follow = MapLanguageService.instance.followUiLanguage;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(children: [
+          Container(
+            width: 44, height: 44,
+            decoration: BoxDecoration(
+                color: primary.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12)),
+            child: Icon(Icons.language, color: primary, size: 22),
+          ),
+          const SizedBox(width: 16),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Map labels language',
+                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                follow
+                    ? 'Place names match app language'
+                    : 'Place names always in English',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          )),
+          Switch(
+            value: follow,
+            activeColor: TripReadyTheme.teal,
+            onChanged: (v) => MapLanguageService.instance.setFollowUiLanguage(v),
+          ),
+        ]),
+      ),
+    );
+  }
+}
+
+// ── Recent Destinations tile ─────────────────────────────────────────────────
+
+class _RecentDestinationsTile extends StatefulWidget {
+  const _RecentDestinationsTile();
+  @override
+  State<_RecentDestinationsTile> createState() => _RecentDestinationsTileState();
+}
+
+class _RecentDestinationsTileState extends State<_RecentDestinationsTile> {
+  List<RecentDestination> _items = [];
+  bool _loaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final all = await RecentDestinationsService.instance.getAll();
+    if (mounted) setState(() { _items = all.toList(); _loaded = true; });
+  }
+
+  Future<void> _removeOne(RecentDestination r) async {
+    await RecentDestinationsService.instance.remove(r);
+    _load();
+  }
+
+  Future<void> _clearAll(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Clear recent destinations?'),
+        content: const Text('This will remove all saved recent destinations.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: TripReadyTheme.danger),
+            child: const Text('Clear all'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await RecentDestinationsService.instance.clearAll();
+      _load();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+
+    if (!_loaded) {
+      return const Card(
+        margin: EdgeInsets.only(bottom: 10),
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    if (_items.isEmpty) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(children: [
+            Icon(Icons.history, color: primary.withOpacity(0.4), size: 22),
+            const SizedBox(width: 16),
+            Text('No recent destinations yet.',
+                style: TextStyle(color: Theme.of(context)
+                    .colorScheme.onSurface.withOpacity(0.5))),
+          ]),
+        ),
+      );
+    }
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: Column(children: [
+        // Header row with clear-all
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 4),
+          child: Row(children: [
+            Icon(Icons.history, color: primary, size: 20),
+            const SizedBox(width: 10),
+            Expanded(child: Text('${_items.length} saved destinations',
+                style: Theme.of(context).textTheme.bodyMedium)),
+            TextButton(
+              onPressed: () => _clearAll(context),
+              style: TextButton.styleFrom(foregroundColor: TripReadyTheme.danger),
+              child: const Text('Clear all'),
+            ),
+          ]),
+        ),
+        const Divider(height: 1, indent: 16, endIndent: 16),
+        ..._items.map((r) => Dismissible(
+          key: ValueKey('${r.city}_${r.countryCode}'),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            alignment: Alignment.centerRight,
+            color: TripReadyTheme.danger.withOpacity(0.12),
+            padding: const EdgeInsets.only(right: 20),
+            child: const Icon(Icons.delete_outline, color: TripReadyTheme.danger),
+          ),
+          onDismissed: (_) => _removeOne(r),
+          child: ListTile(
+            dense: true,
+            leading: FlagWidget(code: r.countryCode, size: 18),
+            title: Text(r.city),
+            subtitle: r.countryName != null
+                ? Text(r.countryName!,
+                    style: const TextStyle(fontSize: 11))
+                : null,
+            trailing: IconButton(
+              icon: const Icon(Icons.close, size: 16),
+              color: Colors.grey.shade400,
+              onPressed: () => _removeOne(r),
+            ),
+          ),
+        )),
+        const SizedBox(height: 8),
+      ]),
     );
   }
 }

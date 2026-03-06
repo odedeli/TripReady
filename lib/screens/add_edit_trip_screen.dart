@@ -13,6 +13,7 @@ import '../theme/app_theme.dart';
 import '../services/localization_ext.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/country_picker_field.dart';
+import '../widgets/city_picker_field.dart';
 import '../services/lookup_service.dart';
 import '../services/language_service.dart';
 import '../models/lookup_value.dart';
@@ -867,39 +868,35 @@ class _RouteSectionState extends State<_RouteSection> {
     String? validatorMsg,
     VoidCallback? onSubmitted,
   }) {
+    final country = countryCode != null ? countryByCode(countryCode) : null;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          flex: 3,
-          child: validatorMsg != null
-            ? TextFormField(
-                controller: cityCtrl,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => onSubmitted?.call(),
-                decoration: InputDecoration(
-                  hintText: hint,
-                  prefixIcon: const Icon(Icons.place_outlined),
-                ),
-                validator: (v) => (v == null || v.trim().isEmpty) ? validatorMsg : null,
-              )
-            : TextField(
-                controller: cityCtrl,
-                textInputAction: TextInputAction.next,
-                onSubmitted: (_) => onSubmitted?.call(),
-                decoration: InputDecoration(
-                  hintText: hint,
-                  prefixIcon: const Icon(Icons.place_outlined),
-                ),
-              ),
-        ),
-        const SizedBox(width: 12),
+        // Country first (flex 2)
         Expanded(
           flex: 2,
           child: CountryPickerField(
             initialCode: countryCode,
             label: widget.countryLabel,
-            onChanged: (c) => onCountryChanged(c?.code),
+            onChanged: (c) {
+              onCountryChanged(c?.code);
+              // Clear city when country changes
+              cityCtrl.clear();
+            },
+          ),
+        ),
+        const SizedBox(width: 12),
+        // City second (flex 3) — CityPickerField for picker UX
+        Expanded(
+          flex: 3,
+          child: CityPickerField(
+            countryCode: countryCode,
+            countryName: country?.name,
+            controller: cityCtrl,
+            validator: validatorMsg != null
+                ? (v) => (v == null || v.trim().isEmpty) ? validatorMsg : null
+                : null,
+            onSubmitted: onSubmitted,
           ),
         ),
       ],
@@ -926,18 +923,6 @@ class _RouteSectionState extends State<_RouteSection> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              flex: 3,
-              child: TextFormField(
-                controller: widget.depController,
-                focusNode: widget.depFocus,
-                textInputAction: TextInputAction.next,
-                onFieldSubmitted: (_) => widget.onDepSubmitted(),
-                decoration: const InputDecoration(prefixIcon: Icon(Icons.place_outlined)),
-                validator: (v) => (v == null || v.trim().isEmpty) ? widget.validatorMsg : null,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
               flex: 2,
               child: Focus(
                 focusNode: widget.depCountryFocus,
@@ -950,6 +935,19 @@ class _RouteSectionState extends State<_RouteSection> {
                   label: widget.countryLabel,
                   onChanged: (c) => widget.onDepCountryChanged(c?.code),
                 ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              flex: 3,
+              child: CityPickerField(
+                countryCode: widget.depCountryCode,
+                countryName: widget.depCountryCode != null
+                    ? countryByCode(widget.depCountryCode!)?.name : null,
+                controller: widget.depController,
+                focusNode: widget.depFocus,
+                validator: (v) => (v == null || v.trim().isEmpty) ? widget.validatorMsg : null,
+                onSubmitted: widget.onDepSubmitted,
               ),
             ),
           ],

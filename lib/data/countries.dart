@@ -32,10 +32,10 @@ class Country {
 
   /// Display string for the picker row in a given locale.
   String localizedDisplay(String languageCode) =>
-      '$flag  ${localizedName(languageCode)}';
+      localizedName(languageCode);
 
   /// English display — used as fallback
-  String get display => '$flag  $name';
+  String get display => name;
 
   @override
   String toString() => name;

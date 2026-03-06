@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'flag_widget.dart';
 import '../data/countries.dart';
 import '../services/language_service.dart';
 
@@ -74,7 +75,7 @@ class _CountryPickerFieldState extends State<CountryPickerField> {
         child: Row(
           children: [
             if (hasValue)
-              Text(_selected!.flag, style: const TextStyle(fontSize: 22))
+              FlagWidget(code: _selected!.code, size: 22)
             else
               Icon(Icons.flag_outlined, size: 22, color: onSurface.withOpacity(0.4)),
             const SizedBox(width: 10),
@@ -259,8 +260,8 @@ class _CountryPickerSheetState extends State<_CountryPickerSheet> {
                                 horizontal: 20, vertical: 10),
                             child: Row(
                               children: [
-                                Text(country.flag,
-                                    style: const TextStyle(fontSize: 22)),
+                                FlagWidget(code: country.code,
+                                    size: 22),
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Text(

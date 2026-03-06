@@ -1,22 +1,13 @@
 name: Build All Platforms
 
 on:
-  release:
-    types: [ published ]
+  push:
+    branches: [ main ]
   workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Release tag to attach artifacts to (e.g. v1.3.0). Leave empty to skip.'
-        required: false
-        default: ''
-
-# ── Permissions required to attach files to a release ─────────────────────────
-permissions:
-  contents: write
 
 jobs:
 
-  # ── Windows ───────────────────────────────────────────────────────────────────
+  # ── Windows ───────────────────────────────────────────────
   build-windows:
     name: Windows (zip)
     runs-on: windows-latest
@@ -24,16 +15,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Resolve version
-        id: ver
-        shell: pwsh
-        run: |
-          if ($env:GITHUB_REF_NAME -match '^v\d') {
-            echo "tag=$env:GITHUB_REF_NAME" >> $env:GITHUB_OUTPUT
-          } else {
-            echo "tag=dev" >> $env:GITHUB_OUTPUT
-          }
 
       - name: Install Flutter
         uses: subosito/flutter-action@v2
@@ -52,29 +33,19 @@ jobs:
         run: flutter build windows --release
 
       - name: Zip release bundle
-        shell: pwsh
         run: |
-          $tag = "${{ steps.ver.outputs.tag }}"
-          $zip = "TripReady_${tag}_Windows_x64.zip"
-          Compress-Archive -Path build\windows\x64\runner\Release -DestinationPath $zip
-          echo "ZIP_NAME=$zip" >> $env:GITHUB_OUTPUT
-          echo "ZIP_NAME=$zip" >> $env:GITHUB_ENV
+          cd build\windows\x64\runner
+          Compress-Archive -Path Release -DestinationPath TripReady_v1.0_Windows_x64.zip
+        shell: powershell
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Windows-zip
-          path: ${{ env.ZIP_NAME }}
+          path: build\windows\x64\runner\TripReady_v1.0_Windows_x64.zip
           retention-days: 30
 
-      - name: Attach to GitHub release
-        if: github.event_name == 'release' || inputs.release_tag != ''
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
-          files: ${{ env.ZIP_NAME }}
-
-  # ── Linux ─────────────────────────────────────────────────────────────────────
+  # ── Linux ─────────────────────────────────────────────────
   build-linux:
     name: Linux (.deb + tar.gz)
     runs-on: ubuntu-22.04
@@ -82,15 +53,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Resolve version
-        id: ver
-        run: |
-          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9] ]]; then
-            echo "tag=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
-          else
-            echo "tag=dev" >> $GITHUB_OUTPUT
-          fi
 
       - name: Install Linux dependencies
         run: |
@@ -116,87 +78,67 @@ jobs:
       - name: Build Linux release
         run: flutter build linux --release
 
-      - name: Bundle libsqlite3 into build
-        run: |
-          cp /usr/lib/x86_64-linux-gnu/libsqlite3.so.0 \
-             build/linux/x64/release/bundle/lib/libsqlite3.so
-
       - name: Create tar.gz package
         run: |
-          TAG=${{ steps.ver.outputs.tag }}
           cd build/linux/x64/release/
-          tar -czvf TripReady_${TAG}_Linux_x64.tar.gz bundle/
-          echo "TAR_NAME=TripReady_${TAG}_Linux_x64.tar.gz" >> $GITHUB_ENV
+          tar -czvf TripReady_v1.0_Linux_x64.tar.gz bundle/
 
       - name: Create .deb package
         run: |
-          TAG=${{ steps.ver.outputs.tag }}
-          # Strip leading 'v' for the Debian version field (e.g. v1.3.0 → 1.3.0)
-          DEB_VER="${TAG#v}"
-          DEB_NAME="TripReady_${TAG}_amd64.deb"
-
           mkdir -p tripready_deb/DEBIAN
           mkdir -p tripready_deb/opt/tripready
           mkdir -p tripready_deb/usr/share/applications
+
           cp -r build/linux/x64/release/bundle/* tripready_deb/opt/tripready/
           chmod +x tripready_deb/opt/tripready/tripready
 
-          cat > tripready_deb/DEBIAN/control << CONTROL
+          # Install icons to freedesktop hicolor paths
+          for SIZE in 16 32 48 64 128 256 512; do
+            mkdir -p "tripready_deb/usr/share/icons/hicolor/${SIZE}x${SIZE}/apps"
+            cp "linux/packaging/icons/tripready_${SIZE}.png"                "tripready_deb/usr/share/icons/hicolor/${SIZE}x${SIZE}/apps/tripready.png"
+          done
+
+          # Install desktop entry with icon reference
+          mkdir -p tripready_deb/usr/share/applications
+          cp linux/packaging/tripready.desktop tripready_deb/usr/share/applications/
+
+          cat > tripready_deb/DEBIAN/control << EOF
           Package: tripready
-          Version: ${DEB_VER}
+          Version: 1.0.0
           Section: utils
           Priority: optional
           Architecture: amd64
-          Depends: libgtk-3-0, libblkid1, liblzma5
           Maintainer: TripReady
           Description: TripReady - Personal Travel Planner
            Offline travel management app for managing trips,
            packing lists, tasks, addresses, receipts and documents.
-          CONTROL
+          EOF
 
-          cat > tripready_deb/usr/share/applications/tripready.desktop << DESKTOP
-          [Desktop Entry]
-          Name=TripReady
-          Comment=Personal Travel Planner
-          Exec=/opt/tripready/tripready
-          Terminal=false
-          Type=Application
-          Categories=Utility;
-          DESKTOP
 
-          cat > tripready_deb/DEBIAN/postinst << POSTINST
+
+          cat > tripready_deb/DEBIAN/postinst << EOF
           #!/bin/bash
           chmod +x /opt/tripready/tripready
-          POSTINST
+          EOF
           chmod +x tripready_deb/DEBIAN/postinst
 
-          dpkg-deb --build tripready_deb $DEB_NAME
-          echo "DEB_NAME=${DEB_NAME}" >> $GITHUB_ENV
+          dpkg-deb --build tripready_deb TripReady_v1.0_amd64.deb
 
       - name: Upload tar.gz artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Linux-tar
-          path: build/linux/x64/release/${{ env.TAR_NAME }}
+          path: build/linux/x64/release/TripReady_v1.0_Linux_x64.tar.gz
           retention-days: 30
 
       - name: Upload .deb artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Linux-deb
-          path: ${{ env.DEB_NAME }}
+          path: TripReady_v1.0_amd64.deb
           retention-days: 30
 
-      - name: Attach to GitHub release
-        if: github.event_name == 'release' || inputs.release_tag != ''
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
-          files: |
-            build/linux/x64/release/${{ env.TAR_NAME }}
-            ${{ env.DEB_NAME }}
-
-  # ── Android ───────────────────────────────────────────────────────────────────
+  # ── Android ───────────────────────────────────────────────
   build-android:
     name: Android (APK)
     runs-on: ubuntu-22.04
@@ -204,15 +146,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Resolve version
-        id: ver
-        run: |
-          if [[ "$GITHUB_REF_NAME" =~ ^v[0-9] ]]; then
-            echo "tag=$GITHUB_REF_NAME" >> $GITHUB_OUTPUT
-          else
-            echo "tag=dev" >> $GITHUB_OUTPUT
-          fi
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -235,21 +168,41 @@ jobs:
 
       - name: Rename APK
         run: |
-          TAG=${{ steps.ver.outputs.tag }}
-          APK_NAME="TripReady_${TAG}_Android.apk"
-          cp build/app/outputs/flutter-apk/app-release.apk $APK_NAME
-          echo "APK_NAME=${APK_NAME}" >> $GITHUB_ENV
+          cp build/app/outputs/flutter-apk/app-release.apk \
+             TripReady_v1.0_Android.apk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Android-apk
-          path: ${{ env.APK_NAME }}
+          path: TripReady_v1.0_Android.apk
           retention-days: 30
 
-      - name: Attach to GitHub release
-        if: github.event_name == 'release' || inputs.release_tag != ''
-        uses: softprops/action-gh-release@v2
+  # ── Snap ──────────────────────────────────────────────────
+  build-snap:
+    name: Snap (.snap)
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Snapcraft
+        run: |
+          sudo snap install snapcraft --classic
+
+      - name: Build snap
+        run: snapcraft --destructive-mode
+        env:
+          SNAPCRAFT_BUILD_ENVIRONMENT: host
+
+      - name: Rename snap artifact
+        run: |
+          mv tripready_*.snap TripReady_v1.4.1_amd64.snap || true
+
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.event_name == 'release' && github.ref_name || inputs.release_tag }}
-          files: ${{ env.APK_NAME }}
+          name: TripReady-Snap
+          path: TripReady_v1.4.1_amd64.snap
+          retention-days: 30

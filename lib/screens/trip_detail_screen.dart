@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import '../widgets/map_search_bar.dart';
+import '../widgets/flag_widget.dart';
+import '../widgets/trip_route_display.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -260,11 +262,11 @@ class _TripHeaderCard extends StatelessWidget {
           if (trip.hasStops || trip.hasReturnDestination)
             Flexible(child: _RouteChips(trip: trip))
           else
-            Flexible(child: Text(
-              trip.countryDisplay != null
-                  ? '${trip.destination}, ${trip.countryDisplay}'
-                  : trip.destination,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            Flexible(child: TripDestinationDisplay(
+              city: trip.destination,
+              countryCode: trip.country,
+              style: const TextStyle(fontSize: 14),
+              color: Colors.white70,
             )),
         ]),
         const SizedBox(height: 16),
@@ -307,31 +309,30 @@ class _RouteChips extends StatelessWidget {
   final Trip trip;
   const _RouteChips({required this.trip});
 
-  /// Returns a space + flag emoji for an ISO country code, or empty string.
-  String _flag(String? code) {
-    if (code == null || code.length != 2) return '';
-    final base = 0x1F1E6 - 0x41;
-    final chars = code.toUpperCase().codeUnits;
-    return ' ' + String.fromCharCode(base + chars[0]) + String.fromCharCode(base + chars[1]);
-  }
-
-  Widget _chip(String label, {bool isEndpoint = false}) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-    decoration: BoxDecoration(
-      color: isEndpoint
-          ? Colors.white.withOpacity(0.20)
-          : Colors.white.withOpacity(0.10),
-      borderRadius: BorderRadius.circular(14),
-      border: Border.all(
-        color: Colors.white.withOpacity(isEndpoint ? 0.4 : 0.2),
+  Widget _chip(String city, String? countryCode, {bool isEndpoint = false}) =>
+    Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isEndpoint
+            ? Colors.white.withOpacity(0.20)
+            : Colors.white.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white.withOpacity(isEndpoint ? 0.4 : 0.2),
+        ),
       ),
-    ),
-    child: Text(label, style: TextStyle(
-      color: isEndpoint ? Colors.white : Colors.white70,
-      fontSize: isEndpoint ? 13 : 12,
-      fontWeight: isEndpoint ? FontWeight.w600 : FontWeight.w400,
-    )),
-  );
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(city, style: TextStyle(
+            color: isEndpoint ? Colors.white : Colors.white70,
+            fontSize: isEndpoint ? 13 : 12,
+            fontWeight: isEndpoint ? FontWeight.w600 : FontWeight.w400,
+          )),
+          ...flagInline(countryCode, size: isEndpoint ? 14 : 13),
+        ],
+      ),
+    );
 
   Widget _arrow() => const Padding(
     padding: EdgeInsets.symmetric(horizontal: 4),
@@ -340,20 +341,15 @@ class _RouteChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Compact: "London 🇬🇧" — flag emoji only, no full country name
-    final depLabel = '${trip.destination}${_flag(trip.country)}';
-    final retLabel = trip.hasReturnDestination
-        ? '${trip.returnDestination}${_flag(trip.returnCountry)}'
-        : null;
-
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       spacing: 4,
       runSpacing: 6,
       children: [
-        _chip(depLabel, isEndpoint: true),
-        ...trip.stops.expand((s) => [_arrow(), _chip('${s.city}${_flag(s.countryCode)}')]),
-        if (retLabel != null) ...[_arrow(), _chip(retLabel, isEndpoint: true)],
+        _chip(trip.destination, trip.country, isEndpoint: true),
+        ...trip.stops.expand((s) => [_arrow(), _chip(s.city, s.countryCode)]),
+        if (trip.hasReturnDestination)
+          ...[_arrow(), _chip(trip.returnDestination!, trip.returnCountry, isEndpoint: true)],
       ],
     );
   }

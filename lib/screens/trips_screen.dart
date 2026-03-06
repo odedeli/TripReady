@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/watermark_scaffold.dart';
 import '../widgets/shared_widgets.dart';
+import '../widgets/trip_route_display.dart';
 import '../services/localization_ext.dart';
 import 'add_edit_trip_screen.dart';
 import 'trip_detail_screen.dart';
@@ -233,8 +234,9 @@ class _TripCard extends StatelessWidget {
             Row(children: [
               const Icon(Icons.place_outlined, size: 14, color: TripReadyTheme.teal),
               const SizedBox(width: 4),
-              Text(trip.routeDisplay,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: TripReadyTheme.teal, fontWeight: FontWeight.w500)),
+              TripRouteDisplay(trip: trip,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                  color: TripReadyTheme.teal),
             ]),
             const SizedBox(height: 6),
             Row(children: [

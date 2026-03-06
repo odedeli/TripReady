@@ -7,6 +7,7 @@ import '../../models/trip.dart';
 import '../../database/database_helper.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
+import '../../widgets/trip_route_display.dart';
 import '../../services/localization_ext.dart';
 import '../trip_detail_screen.dart';
 import '../../services/app_notifier.dart';
@@ -129,8 +130,9 @@ class _ArchivedTripCard extends StatelessWidget {
           const SizedBox(height: 6),
           Row(children: [
             const Icon(Icons.place_outlined, size: 13, color: TripReadyTheme.teal), const SizedBox(width: 4),
-            Text(trip.routeDisplay,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: TripReadyTheme.teal, fontWeight: FontWeight.w500)),
+            TripRouteDisplay(trip: trip,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+              color: TripReadyTheme.teal),
           ]),
           const SizedBox(height: 4),
           Row(children: [
