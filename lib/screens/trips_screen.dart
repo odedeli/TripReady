@@ -11,6 +11,7 @@ import '../services/localization_ext.dart';
 import 'add_edit_trip_screen.dart';
 import 'trip_detail_screen.dart';
 import '../services/app_notifier.dart';
+import '../widgets/notification_center.dart';
 
 class TripsScreen extends StatefulWidget {
   const TripsScreen({super.key});
@@ -56,6 +57,7 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
             tooltip: l.actionUpdate,
             onPressed: _loadTrips,
           ),
+          Builder(builder: (ctx) => const NotificationBell()),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -68,6 +70,7 @@ class _TripsScreenState extends State<TripsScreen> with SingleTickerProviderStat
           ],
         ),
       ),
+      endDrawer: const NotificationEndDrawer(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addTrip,
         icon: const Icon(Icons.add),

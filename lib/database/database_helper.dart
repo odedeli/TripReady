@@ -22,7 +22,7 @@ class DatabaseHelper {
     final path = join(dbPath, filePath);
     return await openDatabase(
       path,
-      version: 7,
+      version: 9,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -153,6 +153,7 @@ class DatabaseHelper {
         type TEXT,
         file_path TEXT,
         notes TEXT,
+        expiry_date TEXT,
         created_at TEXT NOT NULL,
         FOREIGN KEY (trip_id) REFERENCES trips (id) ON DELETE CASCADE
       )
@@ -160,6 +161,8 @@ class DatabaseHelper {
 
     await _createLookupTable(db);
     await _seedLookupValues(db);
+    await _createRemindersTable(db);
+    await _createNotificationsTable(db);
   }
 
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
@@ -193,7 +196,50 @@ class DatabaseHelper {
       await db.execute('ALTER TABLE addresses ADD COLUMN latitude REAL');
       await db.execute('ALTER TABLE addresses ADD COLUMN longitude REAL');
     }
+    if (oldVersion < 8) {
+      await _createRemindersTable(db);
+    }
+    if (oldVersion < 9) {
+      await _createNotificationsTable(db);
+      await db.execute('ALTER TABLE documents ADD COLUMN expiry_date TEXT');
+    }
   }
+
+  Future<void> _createRemindersTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS reminders (
+        id          TEXT PRIMARY KEY,
+        ref_type    TEXT NOT NULL,
+        ref_id      TEXT NOT NULL,
+        stop_index  INTEGER,
+        lead_days   INTEGER NOT NULL DEFAULT 1,
+        time_of_day TEXT NOT NULL DEFAULT '08:00',
+        is_enabled  INTEGER NOT NULL DEFAULT 1,
+        created_at  TEXT NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_reminders_ref ON reminders (ref_type, ref_id)'
+    );
+  }
+
+  Future<void> _createNotificationsTable(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS notifications (
+        id          TEXT PRIMARY KEY,
+        ref_type    TEXT NOT NULL,
+        ref_id      TEXT NOT NULL,
+        title       TEXT NOT NULL,
+        body        TEXT NOT NULL,
+        is_read     INTEGER NOT NULL DEFAULT 0,
+        created_at  TEXT NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications (is_read)'
+    );
+  }
+
 
   Future<void> _createLookupTable(Database db) async {
     await db.execute('''
@@ -409,8 +455,12 @@ class DatabaseHelper {
       'addresses',
       'receipts',
       'documents',
+      'reminders',
+      'notifications',
       'trips',
       'lookup_values',
+      'reminders',
+      'notifications',
     ];
     await db.transaction((txn) async {
       for (final table in tables) {

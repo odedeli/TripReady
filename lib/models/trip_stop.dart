@@ -6,8 +6,9 @@ import '../services/language_service.dart';
 class TripStop {
   final String city;
   final String? countryCode;
+  final DateTime? arrivalDate;
 
-  const TripStop({required this.city, this.countryCode});
+  const TripStop({required this.city, this.countryCode, this.arrivalDate});
 
   String? get countryDisplay {
     if (countryCode == null || countryCode!.isEmpty) return null;
@@ -25,10 +26,17 @@ class TripStop {
     return cd != null ? '$city, $cd' : city;
   }
 
-  Map<String, dynamic> toJson() => {'city': city, 'countryCode': countryCode};
+  Map<String, dynamic> toJson() => {
+    'city': city,
+    'countryCode': countryCode,
+    'arrivalDate': arrivalDate?.toIso8601String(),
+  };
 
-  factory TripStop.fromJson(Map<String, dynamic> j) =>
-      TripStop(city: j['city'] as String, countryCode: j['countryCode'] as String?);
+  factory TripStop.fromJson(Map<String, dynamic> j) => TripStop(
+    city: j['city'] as String,
+    countryCode: j['countryCode'] as String?,
+    arrivalDate: j['arrivalDate'] != null ? DateTime.parse(j['arrivalDate'] as String) : null,
+  );
 
   static List<TripStop> listFromJson(String? json) {
     if (json == null || json.isEmpty) return [];
@@ -39,6 +47,14 @@ class TripStop {
   static String listToJson(List<TripStop> stops) =>
       jsonEncode(stops.map((s) => s.toJson()).toList());
 
-  TripStop copyWith({String? city, String? countryCode}) =>
-      TripStop(city: city ?? this.city, countryCode: countryCode ?? this.countryCode);
+  TripStop copyWith({
+    String? city,
+    String? countryCode,
+    DateTime? arrivalDate,
+    bool clearArrivalDate = false,
+  }) => TripStop(
+    city: city ?? this.city,
+    countryCode: countryCode ?? this.countryCode,
+    arrivalDate: clearArrivalDate ? null : (arrivalDate ?? this.arrivalDate),
+  );
 }

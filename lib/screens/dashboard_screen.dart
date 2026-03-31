@@ -17,6 +17,7 @@ import 'addresses/addresses_screen.dart';
 import 'documents/documents_screen.dart';
 import '../main.dart' show tabNotifier;
 import '../services/app_notifier.dart';
+import '../widgets/notification_center.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -62,8 +63,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         centerTitle: true,
         actions: [
           IconButton(icon: const Icon(Icons.refresh_outlined), onPressed: _loadData, tooltip: l.actionUpdate),
+          Builder(builder: (ctx) => const NotificationBell()),
         ],
       ),
+      endDrawer: const NotificationEndDrawer(),
       body: WatermarkBody(
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: TripReadyTheme.teal))

@@ -1,0 +1,9 @@
+{
+  "version": "1.4.1",
+  "build_number": "build09",
+  "build_date": "2026-03-07",
+  "author": "TripReady",
+  "website": "https://github.com/odedeli/TripReady",
+  "license": "MIT",
+  "support": "https://github.com/odedeli/TripReady/issues"
+}

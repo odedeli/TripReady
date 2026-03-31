@@ -236,6 +236,7 @@ class TripDocument {
   final DocumentType type;
   final String? filePath;
   final String? notes;
+  final DateTime? expiryDate;
   final DateTime createdAt;
 
   TripDocument({
@@ -245,6 +246,7 @@ class TripDocument {
     this.type = DocumentType.other,
     this.filePath,
     this.notes,
+    this.expiryDate,
     required this.createdAt,
   });
 
@@ -271,6 +273,7 @@ class TripDocument {
     'type': type.name,
     'file_path': filePath,
     'notes': notes,
+    'expiry_date': expiryDate?.toIso8601String(),
     'created_at': createdAt.toIso8601String(),
   };
 
@@ -284,6 +287,7 @@ class TripDocument {
     ),
     filePath: map['file_path'],
     notes: map['notes'],
+    expiryDate: map['expiry_date'] != null ? DateTime.tryParse(map['expiry_date'] as String) : null,
     createdAt: DateTime.parse(map['created_at']),
   );
 
@@ -294,14 +298,17 @@ class TripDocument {
     DocumentType? type,
     String? filePath,
     String? notes,
+    DateTime? expiryDate,
+    bool clearExpiryDate = false,
     DateTime? createdAt,
   }) => TripDocument(
-    id: id ?? this.id,
-    tripId: tripId ?? this.tripId,
-    name: name ?? this.name,
-    type: type ?? this.type,
-    filePath: filePath ?? this.filePath,
-    notes: notes ?? this.notes,
-    createdAt: createdAt ?? this.createdAt,
+    id:         id         ?? this.id,
+    tripId:     tripId     ?? this.tripId,
+    name:       name       ?? this.name,
+    type:       type       ?? this.type,
+    filePath:   filePath   ?? this.filePath,
+    notes:      notes      ?? this.notes,
+    expiryDate: clearExpiryDate ? null : (expiryDate ?? this.expiryDate),
+    createdAt:  createdAt  ?? this.createdAt,
   );
 }

@@ -9,6 +9,9 @@ import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
 import '../../services/app_notifier.dart';
+import '../../models/reminder.dart';
+import '../../widgets/reminder_bell.dart';
+import '../../widgets/item_reminder_sheet.dart';
 
 class TasksScreen extends StatefulWidget {
   final Trip trip;
@@ -265,7 +268,8 @@ class _TaskCard extends StatelessWidget {
               ],
             ])),
             if (!isArchived)
-              PopupMenuButton<String>(
+              ReminderBell(refType: ReminderRefType.task, refId: task.id),
+            PopupMenuButton<String>(
                 icon: const Icon(Icons.more_vert, size: 18, color: TripReadyTheme.textLight),
                 onSelected: (val) {
                   if (val == 'edit')        onEdit();
@@ -377,6 +381,7 @@ class _AddEditTaskDialog extends StatefulWidget {
 class _AddEditTaskDialogState extends State<_AddEditTaskDialog> {
   final _nameController  = TextEditingController();
   final _notesController = TextEditingController();
+  final _reminderKey = GlobalKey<ItemReminderRowState>();
   DateTime? _dueDate;
   TaskStatus _status = TaskStatus.pending;
   bool _isSaving = false;
@@ -413,10 +418,12 @@ class _AddEditTaskDialogState extends State<_AddEditTaskDialog> {
           name: _nameController.text.trim(), dueDate: _dueDate, clearDueDate: _dueDate == null,
           status: _status, notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim()));
       } else {
+        final newId = const Uuid().v4();
         await DatabaseHelper.instance.insertTask(TripTask(
-          id: const Uuid().v4(), tripId: widget.tripId, name: _nameController.text.trim(),
+          id: newId, tripId: widget.tripId, name: _nameController.text.trim(),
           dueDate: _dueDate, status: _status,
           notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(), createdAt: now));
+        await _reminderKey.currentState?.commitForRef(newId);
       }
       if (mounted) Navigator.pop(context, true);
     } finally {
@@ -467,6 +474,16 @@ class _AddEditTaskDialogState extends State<_AddEditTaskDialog> {
         const SizedBox(height: 12),
         TextField(controller: _notesController, maxLines: 2,
           decoration: InputDecoration(labelText: l.fieldNotes, prefixIcon: const Icon(Icons.notes_outlined), alignLabelWithHint: true)),
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 4),
+        ItemReminderRow(
+          key: _reminderKey,
+          refType: ReminderRefType.task,
+          refId: widget.task?.id,
+          label: 'Task reminder',
+          contextDate: _dueDate,
+        ),
       ])),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.actionCancel)),

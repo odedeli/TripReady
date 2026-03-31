@@ -7,10 +7,48 @@ on:
 
 jobs:
 
+  # ── App Info ──────────────────────────────────────────────
+  update-app-info:
+    name: Update app_info.json
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update app_info.json
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          SEMVER=$(echo $VERSION | cut -d'+' -f1)
+          BUILD=$(echo $VERSION | cut -d'+' -f2)
+          DATE=$(date -u +%Y-%m-%d)
+          cat > assets/data/app_info.json << EOF
+          {
+            "version": "$SEMVER",
+            "build_number": "$BUILD",
+            "build_date": "$DATE",
+            "author": "TripReady",
+            "website": "https://github.com/odedeli/TripReady",
+            "license": "MIT",
+            "support": "https://github.com/odedeli/TripReady/issues"
+          }
+          EOF
+
+      - name: Commit updated app_info.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add assets/data/app_info.json
+          git diff --staged --quiet || git commit -m "chore: update app_info.json [skip ci]"
+          git push
+
   # ── Windows ───────────────────────────────────────────────
   build-windows:
     name: Windows (zip)
     runs-on: windows-latest
+    needs: update-app-info
 
     steps:
       - name: Checkout repository
@@ -49,6 +87,7 @@ jobs:
   build-linux:
     name: Linux (.deb + tar.gz)
     runs-on: ubuntu-22.04
+    needs: update-app-info
 
     steps:
       - name: Checkout repository
@@ -142,6 +181,7 @@ jobs:
   build-android:
     name: Android (APK)
     runs-on: ubuntu-22.04
+    needs: update-app-info
 
     steps:
       - name: Checkout repository
@@ -182,6 +222,7 @@ jobs:
   build-snap:
     name: Snap (.snap)
     runs-on: ubuntu-22.04
+    needs: update-app-info
 
     steps:
       - name: Checkout repository
@@ -198,11 +239,22 @@ jobs:
 
       - name: Rename snap artifact
         run: |
-          mv tripready_*.snap TripReady_v1.4.1_amd64.snap || true
+          VERSION=${GITHUB_REF_NAME:-dev}
+          mv tripready_*.snap TripReady_${VERSION}_amd64.snap || true
+          ls *.snap
 
       - name: Upload snap artifact
         uses: actions/upload-artifact@v4
         with:
           name: TripReady-Snap
-          path: TripReady_v1.4.1_amd64.snap
+          path: TripReady_*_amd64.snap
+
+      - name: Publish to Snap Store
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: snapcore/action-publish@v1
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+        with:
+          snap: TripReady_*_amd64.snap
+          release: stable
           retention-days: 30

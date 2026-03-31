@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/flag_widget.dart';
 import 'package:country_flags/country_flags.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import '../services/recent_destinations_service.dart';
 import '../services/map_language_service.dart';
 
+import '../services/notification_service.dart';
 import '../widgets/app_logo.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/watermark_scaffold.dart';
@@ -55,6 +55,15 @@ class SettingsScreen extends StatelessWidget {
           _SettingsTile(icon: Icons.download_outlined, title: l.settingsRestoreBackup, subtitle: l.settingsRestoreBackupSubtitle, onTap: () => _importBackup(context, l)),
           const SizedBox(height: 24),
 
+          _SectionLabel('Developer Tools'),
+          _SettingsTile(
+            icon: Icons.science_outlined,
+            title: 'Generate sample notifications',
+            subtitle: 'Seeds one notification per active reminder for testing',
+            onTap: () => _seedNotifications(context),
+          ),
+          const SizedBox(height: 24),
+
           _SectionLabel(l.settingsDangerZone),
           _SettingsTile(icon: Icons.delete_forever_outlined, title: l.settingsResetData, subtitle: l.settingsResetDataSubtitle, isDanger: true, onTap: () => _resetAppData(context, l)),
           const SizedBox(height: 24),
@@ -103,11 +112,9 @@ class SettingsScreen extends StatelessWidget {
                             ),
                           ),
                           FutureBuilder<String>(
-                            future: PackageInfo.fromPlatform()
-                                .then((i) => i.version)
-                                .catchError((_) => '1.4.1'),
+                            future: Future.value('1.5.0'),
                             builder: (_, snap) => Text(
-                              "v${snap.data ?? '1.4.1'}",
+                              "v${snap.data ?? '1.5.0'}",
                               style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
@@ -148,6 +155,14 @@ class SettingsScreen extends StatelessWidget {
     if (confirm != true) return;
     final success = await BackupService.instance.importBackup();
     showAppSnackBar(context, success ? l.backupRestoredSuccess : l.backupRestoreFailed);
+  }
+
+  Future<void> _seedNotifications(BuildContext context) async {
+    final count = await NotificationService.instance.seedFromReminders();
+    if (!context.mounted) return;
+    showAppSnackBar(context, count == 0
+        ? 'No active reminders found — set some reminders first.'
+        : 'Generated $count sample notification${count == 1 ? '' : 's'}.');
   }
 
   Future<void> _resetAppData(BuildContext context, AppLocalizations l) async {

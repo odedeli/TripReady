@@ -7,28 +7,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Backlog]
 
-### Sprint v1.5 — Recommended Next Sprint
-- **Map UX/UI improvements (deferred from v1.4)**
-  - Pinned location identification fix — resolve POI name vs street name on reverse geocode
-  - Unified map view — merge Addresses map and Trip Route map into a single shared component
-- In-app & system notifications
-- Document expiry alerts
-- Calendar integration
-- **Store prep:** Google Play Store — Android keystore signing, AAB build, store listing assets, privacy policy
+### Sprint v1.5 — "Smart Alerts" — Next Sprint
+- **App Info & Version**
+  - `assets/data/app_info.json` — version, build date, author, website, license
+  - Loaded at runtime via `rootBundle`; displayed in Settings → About
+  - GitHub Actions auto-updates on every build
+- **In-App Notification Center**
+  - Bell icon in AppBar with unread badge count
+  - Notification center screen — mark as read, dismiss, clear all
+  - Persisted in local DB (new `notifications` table)
+- **System/OS Notifications** (`flutter_local_notifications`)
+  - Android — notification channels + runtime permission request
+  - Windows — Win32 toast notifications
+  - Linux — libnotify / freedesktop notifications
+- **Notification Triggers** (all user-configurable lead time)
+  - Trip departure & return reminders
+  - Task due date reminders
+  - Document expiry alerts
+  - Packing list incomplete reminder (X days before departure)
+- **Settings → Notifications**
+  - Global on/off toggle; per-type toggles; per-type lead time (user-defined)
+  - "Send test notification" button
 
 ### Sprint v1.6
+- **Map UX/UI improvements** (deferred from v1.4/v1.5)
+  - POI name fix — resolve POI name vs street address on reverse geocode
+  - Unified map component — merge Addresses map and Trip Route map
+- **Store prep:** Google Play Store — keystore signing, AAB build, store listing, privacy policy
+- Linux app icon fix (pending Snap Store approval)
 - Packing templates
 - Trip export & share
-- Multi-currency budgeting enhancements
 
 ### Sprint v1.7
+- Calendar integration
 - Home screen widget
-- **Store prep:** Flathub submission — manifest, open source review, Flathub PR
+- **Store prep:** Flathub submission
 
 ### TBD
 - Budget tracking
 - Google Drive integration
 - Embedded document viewer
+- Multi-currency budgeting enhancements
 
 ---
 

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/trip.dart';
 import '../models/trip_stop.dart';
+import '../models/reminder.dart';
 import '../database/database_helper.dart';
 import '../theme/app_theme.dart';
 import '../services/localization_ext.dart';
@@ -18,6 +20,7 @@ import '../services/lookup_service.dart';
 import '../services/language_service.dart';
 import '../models/lookup_value.dart';
 import '../data/countries.dart';
+import '../services/reminder_service.dart';
 
 class AddEditTripScreen extends StatefulWidget {
   final Trip? trip;
@@ -423,6 +426,9 @@ class _AddEditTripScreenState extends State<AddEditTripScreen>
               }),
               countryLabel: l.tripsCountry,
               validatorMsg: l.validatorRequired,
+              tripId: _isEditing ? widget.trip!.id : null,
+              departureDate: _departureDate,
+              returnDate: _returnDate,
             ),
             const SizedBox(height: 16),
 
@@ -760,6 +766,10 @@ class _RouteSection extends StatefulWidget {
   final void Function(String? dest, String? country) onReturnChanged;
   final String countryLabel;
   final String validatorMsg;
+  // For leg reminders — null when creating a new trip
+  final String? tripId;
+  final DateTime? departureDate;
+  final DateTime? returnDate;
 
   const _RouteSection({
     required this.depController,
@@ -776,6 +786,9 @@ class _RouteSection extends StatefulWidget {
     required this.onReturnChanged,
     required this.countryLabel,
     required this.validatorMsg,
+    this.tripId,
+    this.departureDate,
+    this.returnDate,
   });
 
   @override
@@ -917,6 +930,12 @@ class _RouteSectionState extends State<_RouteSection> {
           Text(l.tripsDestination, style: const TextStyle(
             fontSize: 12, fontWeight: FontWeight.w600, color: TripReadyTheme.textMid)),
           Text(' *', style: const TextStyle(color: TripReadyTheme.danger, fontSize: 12)),
+          const Spacer(),
+          _LegBell(
+            tripId: widget.tripId, stopIndex: -1,
+            legLabel: 'Departure · ${widget.depController.text.isNotEmpty ? widget.depController.text : "Departure"}',
+            legDate: widget.departureDate,
+          ),
         ]),
         const SizedBox(height: 6),
         Row(
@@ -1015,6 +1034,10 @@ class _RouteSectionState extends State<_RouteSection> {
                   Expanded(
                     child: Text(stop.label, style: const TextStyle(fontSize: 13)),
                   ),
+                  _LegBell(
+                    tripId: widget.tripId, stopIndex: i,
+                    legLabel: 'Stop · ${stop.city}',
+                  ),
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 16, color: TripReadyTheme.teal),
                     visualDensity: VisualDensity.compact,
@@ -1083,6 +1106,11 @@ class _RouteSectionState extends State<_RouteSection> {
             Text('Return from', style: const TextStyle(
               fontSize: 12, fontWeight: FontWeight.w600, color: TripReadyTheme.textMid)),
             const Spacer(),
+            _LegBell(
+              tripId: widget.tripId, stopIndex: 999,
+              legLabel: 'Return · ${_retCtrl.text.isNotEmpty ? _retCtrl.text : "Return"}',
+              legDate: widget.returnDate,
+            ),
             IconButton(
               icon: const Icon(Icons.close, size: 16),
               visualDensity: VisualDensity.compact,
@@ -1418,5 +1446,381 @@ class _EditTripMapTabState extends State<_EditTripMapTab>
           )),
         ),
     ]);
+  }
+}
+
+// ── Leg Reminder Bell ─────────────────────────────────────────────────────────
+// Small bell shown on each leg row in _RouteSection.
+// stopIndex convention: -1 = departure, 0..N-1 = stops, 999 = return.
+
+class _LegBell extends StatefulWidget {
+  final String? tripId;   // null for new unsaved trips
+  final int stopIndex;
+  final String legLabel;
+  final DateTime? legDate;
+
+  const _LegBell({
+    required this.tripId,
+    required this.stopIndex,
+    required this.legLabel,
+    this.legDate,
+  });
+
+  @override
+  State<_LegBell> createState() => _LegBellState();
+}
+
+class _LegBellState extends State<_LegBell> {
+  bool _active  = false;
+  bool _loading = true;
+
+  @override
+  void initState() { super.initState(); _load(); }
+
+  @override
+  void didUpdateWidget(_LegBell old) {
+    super.didUpdateWidget(old);
+    if (!_loading) _load();
+  }
+
+  Future<void> _load() async {
+    if (widget.tripId == null) {
+      if (mounted) setState(() { _active = false; _loading = false; });
+      return;
+    }
+    setState(() => _loading = true);
+    final r = await ReminderService.instance
+        .getForStop(widget.tripId!, widget.stopIndex);
+    if (mounted) setState(() { _active = r != null && r.isEnabled; _loading = false; });
+  }
+
+  Future<void> _open() async {
+    if (widget.tripId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Save the trip first to set leg reminders.')));
+      return;
+    }
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (_) => _LegReminderSheet(
+        tripId:    widget.tripId!,
+        stopIndex: widget.stopIndex,
+        legLabel:  widget.legLabel,
+        legDate:   widget.legDate,
+      ),
+    );
+    _load();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return const SizedBox(width: 28, height: 28,
+          child: Center(child: SizedBox(width: 12, height: 12,
+              child: CircularProgressIndicator(strokeWidth: 1.5))));
+    }
+    return IconButton(
+      icon: Icon(
+        _active ? Icons.notifications_active : Icons.notifications_none_outlined,
+        size: 16,
+        color: _active ? TripReadyTheme.amber : TripReadyTheme.textLight,
+      ),
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+      tooltip: _active ? 'Leg reminder set' : 'Set leg reminder',
+      onPressed: _open,
+    );
+  }
+}
+
+// ── Leg Reminder Sheet ────────────────────────────────────────────────────────
+
+class _LegReminderSheet extends StatefulWidget {
+  final String tripId;
+  final int stopIndex;
+  final String legLabel;
+  final DateTime? legDate;
+
+  const _LegReminderSheet({
+    required this.tripId,
+    required this.stopIndex,
+    required this.legLabel,
+    this.legDate,
+  });
+
+  @override
+  State<_LegReminderSheet> createState() => _LegReminderSheetState();
+}
+
+class _LegReminderSheetState extends State<_LegReminderSheet> {
+  bool _loading   = true;
+  bool _saving    = false;
+  bool _hasReminder = false;
+  String? _reminderId;
+  int    _leadDays   = 1;
+  String _timeOfDay  = '08:00';
+  bool   _isEnabled  = false;
+  DateTime? _reminderDate;
+
+  final _leadCtrl    = TextEditingController();
+  final _dateTxtCtrl = TextEditingController();
+
+  static final _fmt     = DateFormat('dd/MM/yyyy');
+  static final _fmtDisp = DateFormat('dd MMM yyyy');
+
+  @override
+  void initState() { super.initState(); _load(); }
+
+  @override
+  void dispose() { _leadCtrl.dispose(); _dateTxtCtrl.dispose(); super.dispose(); }
+
+  Future<void> _load() async {
+    final r = await ReminderService.instance
+        .getForStop(widget.tripId, widget.stopIndex);
+    if (mounted) setState(() {
+      _hasReminder = r != null;
+      _reminderId  = r?.id;
+      _leadDays    = r?.leadDays  ?? 1;
+      _timeOfDay   = r?.timeOfDay ?? '08:00';
+      _isEnabled   = r != null && r.isEnabled;
+      _leadCtrl.text = _leadDays.toString();
+      _reminderDate  = _calcDate(_leadDays);
+      _dateTxtCtrl.text = _reminderDate != null ? _fmt.format(_reminderDate!) : '';
+      _loading = false;
+    });
+  }
+
+  DateTime? _calcDate(int days) =>
+      widget.legDate?.subtract(Duration(days: days));
+
+  int _calcDays(DateTime d) {
+    if (widget.legDate == null) return 0;
+    final diff = widget.legDate!.difference(d).inDays;
+    return diff < 0 ? 0 : diff;
+  }
+
+  void _onDaysChanged(String v) {
+    final d = int.tryParse(v);
+    if (d != null && d >= 0) {
+      setState(() {
+        _leadDays = d;
+        _reminderDate = _calcDate(d);
+        if (_reminderDate != null) _dateTxtCtrl.text = _fmt.format(_reminderDate!);
+      });
+    }
+  }
+
+  void _onDatePicked(DateTime d) {
+    setState(() {
+      _reminderDate = d;
+      _dateTxtCtrl.text = _fmt.format(d);
+      _leadDays = _calcDays(d);
+      _leadCtrl.text = _leadDays.toString();
+    });
+  }
+
+  DateTime? _parseDate(String v) {
+    final parts = v.trim().replaceAll('-', '/').replaceAll('.', '/').split('/');
+    if (parts.length != 3) return null;
+    final d = int.tryParse(parts[0]), m = int.tryParse(parts[1]), y = int.tryParse(parts[2]);
+    if (d == null || m == null || y == null) return null;
+    if (y < 2020 || y > 2040 || m < 1 || m > 12 || d < 1 || d > 31) return null;
+    try { return DateTime(y, m, d); } catch (_) { return null; }
+  }
+
+  Future<void> _pickDate() async {
+    final init = _reminderDate ?? widget.legDate ?? DateTime.now();
+    final p = await showDatePicker(
+      context: context, initialDate: init,
+      firstDate: DateTime(2020), lastDate: DateTime(2040),
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(colorScheme: const ColorScheme.light(
+            primary: TripReadyTheme.teal, onPrimary: Colors.white)),
+        child: child!),
+    );
+    if (p != null) _onDatePicked(p);
+  }
+
+  Future<void> _pickTime() async {
+    final parts = _timeOfDay.split(':');
+    final p = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(
+          hour: int.tryParse(parts[0]) ?? 8,
+          minute: int.tryParse(parts[1]) ?? 0),
+    );
+    if (p != null && mounted) {
+      setState(() {
+        _timeOfDay =
+            '${p.hour.toString().padLeft(2, '0')}:${p.minute.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
+  Future<void> _ok() async {
+    setState(() => _saving = true);
+    try {
+      final svc = ReminderService.instance;
+      if (!_isEnabled) {
+        if (_reminderId != null) await svc.delete(_reminderId!);
+      } else if (_hasReminder && _reminderId != null) {
+        final existing = await svc.getById(_reminderId!);
+        if (existing != null) {
+          await svc.update(existing.copyWith(
+              leadDays: _leadDays, timeOfDay: _timeOfDay, isEnabled: true));
+        }
+      } else {
+        await svc.create(
+          refType:   ReminderRefType.tripStop,
+          refId:     widget.tripId,
+          stopIndex: widget.stopIndex,
+          leadDays:  _leadDays,
+          timeOfDay: _timeOfDay,
+          isEnabled: true,
+        );
+      }
+      if (mounted) Navigator.pop(context);
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hasDate = widget.legDate != null;
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24, 20, 24,
+          24 + MediaQuery.of(context).viewInsets.bottom),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        // Handle
+        Center(child: Container(width: 36, height: 4,
+            decoration: BoxDecoration(color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2)))),
+        const SizedBox(height: 16),
+
+        // Header
+        Row(children: [
+          Icon(_isEnabled ? Icons.notifications_active : Icons.notifications_off_outlined,
+              color: _isEnabled ? TripReadyTheme.amber : TripReadyTheme.textLight, size: 22),
+          const SizedBox(width: 10),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(widget.legLabel,
+                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+            if (widget.legDate != null)
+              Text(_fmtDisp.format(widget.legDate!),
+                  style: const TextStyle(fontSize: 12, color: TripReadyTheme.textLight)),
+          ])),
+          Switch(
+            value: _isEnabled,
+            activeColor: TripReadyTheme.amber,
+            onChanged: _loading ? null : (v) => setState(() => _isEnabled = v),
+          ),
+        ]),
+        const SizedBox(height: 20),
+
+        if (_loading)
+          const CircularProgressIndicator()
+        else ...[
+          // Timing row
+          Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+            SizedBox(width: 52, height: 42, child: TextField(
+              controller: _leadCtrl,
+              keyboardType: TextInputType.number,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
+                  color: TripReadyTheme.textDark),
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: _onDaysChanged,
+              decoration: const InputDecoration(
+                isDense: true, filled: true, fillColor: Color(0xFFF2FAFE),
+                hintText: '0',
+                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                    borderSide: BorderSide(color: TripReadyTheme.teal, width: 1.5)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8)),
+                    borderSide: BorderSide(color: TripReadyTheme.teal, width: 2)),
+              ),
+            )),
+            const SizedBox(width: 8),
+            Text(hasDate ? 'days before, on' : 'days before, at',
+                style: const TextStyle(fontSize: 13, color: TripReadyTheme.textMid)),
+            const SizedBox(width: 8),
+            if (hasDate) ...[
+              SizedBox(width: 120, height: 42, child: TextField(
+                controller: _dateTxtCtrl,
+                keyboardType: TextInputType.datetime,
+                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                    color: TripReadyTheme.teal),
+                onChanged: (v) {
+                  final parts = v.trim().replaceAll('-','/').replaceAll('.','/').split('/');
+                  if (parts.length == 3) {
+                    final p = _parseDate(v);
+                    if (p != null) _onDatePicked(p);
+                  }
+                },
+                decoration: InputDecoration(
+                  isDense: true, filled: true, fillColor: const Color(0xFFF2FAFE),
+                  hintText: 'dd/mm/yyyy',
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                  enabledBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(color: TripReadyTheme.teal, width: 1.5)),
+                  focusedBorder: const OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(8)),
+                      borderSide: BorderSide(color: TripReadyTheme.teal, width: 2)),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_month_outlined, size: 15,
+                        color: TripReadyTheme.teal),
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    onPressed: _pickDate,
+                  ),
+                ),
+              )),
+              const SizedBox(width: 6),
+              const Text('at', style: TextStyle(fontSize: 13, color: TripReadyTheme.textMid)),
+              const SizedBox(width: 6),
+            ],
+            // Time pill
+            GestureDetector(
+              onTap: _pickTime,
+              child: Container(
+                width: 120, height: 42,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2FAFE),
+                  border: Border.all(color: TripReadyTheme.teal, width: 1.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.access_time, size: 15, color: TripReadyTheme.teal),
+                  const SizedBox(width: 5),
+                  Text(_timeOfDay, style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.w700, color: TripReadyTheme.teal)),
+                ]),
+              ),
+            ),
+          ]),
+          const SizedBox(height: 24),
+
+          SizedBox(width: double.infinity,
+            child: FilledButton(
+              onPressed: _saving ? null : _ok,
+              style: FilledButton.styleFrom(backgroundColor: TripReadyTheme.teal),
+              child: _saving
+                  ? const SizedBox(width: 18, height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('OK'),
+            ),
+          ),
+        ],
+      ]),
+    );
   }
 }

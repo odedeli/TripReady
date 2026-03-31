@@ -10,6 +10,10 @@ import '../../theme/app_theme.dart';
 import '../../widgets/shared_widgets.dart';
 import '../../services/localization_ext.dart';
 import '../../services/app_notifier.dart';
+import 'package:intl/intl.dart';
+import '../../models/reminder.dart';
+import '../../widgets/reminder_bell.dart';
+import '../../widgets/item_reminder_sheet.dart';
 
 class DocumentsScreen extends StatefulWidget {
   final Trip trip;
@@ -159,6 +163,7 @@ class _DocumentCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        onTap: onEdit,
         leading: Container(width: 44, height: 44,
           decoration: BoxDecoration(color: doc.hasFile ? TripReadyTheme.teal.withOpacity(0.1) : TripReadyTheme.warmGrey, borderRadius: BorderRadius.circular(12)),
           child: Icon(doc.hasFile ? Icons.insert_drive_file : Icons.insert_drive_file_outlined, color: doc.hasFile ? TripReadyTheme.teal : TripReadyTheme.textLight, size: 22)),
@@ -170,16 +175,28 @@ class _DocumentCard extends StatelessWidget {
               Expanded(child: Text(doc.filePath!.split(Platform.pathSeparator).last, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: TripReadyTheme.teal), overflow: TextOverflow.ellipsis))])
           else
             Text(l.documentsNoFileAttached, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: TripReadyTheme.textLight)),
+          if (doc.expiryDate != null)
+            Row(children: [
+              const Icon(Icons.event_outlined, size: 11, color: TripReadyTheme.amber),
+              const SizedBox(width: 3),
+              Text('Expires ${DateFormat('dd MMM yyyy').format(doc.expiryDate!)}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: doc.expiryDate!.isBefore(DateTime.now()) ? TripReadyTheme.danger : TripReadyTheme.amber,
+                  fontWeight: FontWeight.w600)),
+            ]),
         ]),
-        trailing: !isArchived ? PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert, size: 18, color: TripReadyTheme.textLight),
-          onSelected: (val) { if (val == 'open') onOpen(); if (val == 'edit') onEdit(); if (val == 'delete') onDelete(); },
-          itemBuilder: (_) => [
-            if (doc.hasFile) PopupMenuItem(value: 'open', child: Text(l.documentsFileAttached)),
-            PopupMenuItem(value: 'edit', child: Text(l.actionEdit)),
-            PopupMenuItem(value: 'delete', child: Text(l.actionDelete, style: const TextStyle(color: TripReadyTheme.danger))),
-          ],
-        ) : null,
+        trailing: !isArchived ? SizedBox(width: 80, child: Row(mainAxisSize: MainAxisSize.min, children: [
+          ReminderBell(refType: ReminderRefType.document, refId: doc.id),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, size: 18, color: TripReadyTheme.textLight),
+            onSelected: (val) { if (val == 'open') onOpen(); if (val == 'edit') onEdit(); if (val == 'delete') onDelete(); },
+            itemBuilder: (_) => [
+              if (doc.hasFile) PopupMenuItem(value: 'open', child: Text(l.documentsFileAttached)),
+              PopupMenuItem(value: 'edit', child: Text(l.actionEdit)),
+              PopupMenuItem(value: 'delete', child: Text(l.actionDelete, style: const TextStyle(color: TripReadyTheme.danger))),
+            ],
+          ),
+        ])) : null,
       ),
     );
   }
@@ -197,15 +214,17 @@ class _AddEditDocumentDialog extends StatefulWidget {
 class _AddEditDocumentDialogState extends State<_AddEditDocumentDialog> {
   final _nameController  = TextEditingController();
   final _notesController = TextEditingController();
+  final _reminderKey = GlobalKey<ItemReminderRowState>();
   DocumentType _type = DocumentType.other;
   String? _filePath;
+  DateTime? _expiryDate;
   bool _isSaving = false, _isPickingFile = false;
   bool get _isEditing => widget.document != null;
 
   @override
   void initState() {
     super.initState();
-    if (_isEditing) { final d = widget.document!; _nameController.text = d.name; _notesController.text = d.notes ?? ''; _type = d.type; _filePath = d.filePath; }
+    if (_isEditing) { final d = widget.document!; _nameController.text = d.name; _notesController.text = d.notes ?? ''; _type = d.type; _filePath = d.filePath; _expiryDate = d.expiryDate; }
   }
 
   @override
@@ -229,9 +248,11 @@ class _AddEditDocumentDialogState extends State<_AddEditDocumentDialog> {
     setState(() => _isSaving = true);
     try {
       if (_isEditing) {
-        await DatabaseHelper.instance.updateDocument(widget.document!.copyWith(name: _nameController.text.trim(), type: _type, filePath: _filePath, notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim()));
+        await DatabaseHelper.instance.updateDocument(widget.document!.copyWith(name: _nameController.text.trim(), type: _type, filePath: _filePath, notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(), expiryDate: _expiryDate, clearExpiryDate: _expiryDate == null));
       } else {
-        await DatabaseHelper.instance.insertDocument(TripDocument(id: const Uuid().v4(), tripId: widget.tripId, name: _nameController.text.trim(), type: _type, filePath: _filePath, notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(), createdAt: DateTime.now()));
+        final newDocId = const Uuid().v4();
+        await DatabaseHelper.instance.insertDocument(TripDocument(id: newDocId, tripId: widget.tripId, name: _nameController.text.trim(), type: _type, filePath: _filePath, notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(), expiryDate: _expiryDate, createdAt: DateTime.now()));
+        await _reminderKey.currentState?.commitForRef(newDocId);
       }
       if (mounted) Navigator.pop(context, true);
     } finally { if (mounted) setState(() => _isSaving = false); }
@@ -267,6 +288,21 @@ class _AddEditDocumentDialogState extends State<_AddEditDocumentDialog> {
         const SizedBox(height: 10),
         TextField(controller: _notesController, maxLines: 2,
           decoration: InputDecoration(labelText: l.fieldNotes, prefixIcon: const Icon(Icons.notes_outlined), alignLabelWithHint: true)),
+        const SizedBox(height: 10),
+        _ExpiryDateField(
+          value: _expiryDate,
+          onChanged: (d) => setState(() => _expiryDate = d),
+        ),
+        const SizedBox(height: 16),
+        const Divider(),
+        const SizedBox(height: 4),
+        ItemReminderRow(
+          key: _reminderKey,
+          refType: ReminderRefType.document,
+          refId: widget.document?.id,
+          label: 'Document reminder',
+          contextDate: _expiryDate,
+        ),
       ])),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.actionCancel)),
@@ -275,6 +311,59 @@ class _AddEditDocumentDialogState extends State<_AddEditDocumentDialog> {
           child: _isSaving ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)) : Text(_isEditing ? l.actionUpdate : l.documentsAddDocument),
         ),
       ],
+    );
+  }
+}
+
+// ── Expiry Date Field ─────────────────────────────────────────────────────────
+
+class _ExpiryDateField extends StatelessWidget {
+  final DateTime? value;
+  final ValueChanged<DateTime?> onChanged;
+  const _ExpiryDateField({required this.value, required this.onChanged});
+
+  static final _fmt = DateFormat('dd MMM yyyy');
+
+  Future<void> _pick(BuildContext context) async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: value ?? DateTime.now().add(const Duration(days: 365)),
+      firstDate: DateTime(2020), lastDate: DateTime(2040),
+      helpText: 'Document expiry date',
+      builder: (ctx, child) => Theme(
+        data: Theme.of(ctx).copyWith(colorScheme: const ColorScheme.light(
+            primary: TripReadyTheme.teal, onPrimary: Colors.white)),
+        child: child!),
+    );
+    if (picked != null) onChanged(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _pick(context),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 13),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: value != null ? TripReadyTheme.teal : TripReadyTheme.warmGrey,
+            width: value != null ? 2 : 1),
+        ),
+        child: Row(children: [
+          Icon(Icons.event_outlined, size: 18,
+              color: value != null ? TripReadyTheme.teal : TripReadyTheme.textMid),
+          const SizedBox(width: 10),
+          Expanded(child: Text(
+            value != null ? 'Expires ${_fmt.format(value!)}' : 'Expiry date (optional)',
+            style: TextStyle(fontSize: 14,
+                color: value != null ? TripReadyTheme.textDark : TripReadyTheme.textLight))),
+          if (value != null)
+            GestureDetector(
+              onTap: () => onChanged(null),
+              child: const Icon(Icons.close, size: 16, color: TripReadyTheme.textLight)),
+        ]),
+      ),
     );
   }
 }
